@@ -41,9 +41,13 @@ func PostShortenerHandler(storage *Storage) http.HandlerFunc {
 		//}
 
 		//установим правильный заголовок для типа данных
+		w.WriteHeader(http.StatusCreated)
 		w.Header().Set("Content-Type", "text/plain")
-		fmt.Println("Psth: ", r.URL.Path)
-		fmt.Println("Storage: ", storage)
+		fmt.Println("Host: ", r.Host)
+		fmt.Println("URL: ", r.URL)
+		fmt.Println(storage)
+		//fmt.Println("Psth: ", r.URL.Path)
+		//fmt.Println("Storage: ", storage)
 	}
 }
 
