@@ -94,8 +94,8 @@ func TestStorage_GetHandler(t *testing.T) {
 			var storage Storage
 			storage.EmptyStorage()
 			storage["GyuRe0"] = "https://yandex.ru/"
-			reqUrl := "/" + tt.url
-			r := httptest.NewRequest(tt.method, reqUrl, nil)
+			reqURL := "/" + tt.url
+			r := httptest.NewRequest(tt.method, reqURL, nil)
 			w := httptest.NewRecorder()
 			storage.GetHandler(w, r)
 
