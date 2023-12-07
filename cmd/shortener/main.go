@@ -65,12 +65,6 @@ func ChoiceHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func PostHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Header.Get("Content-Type") != "text/plain" {
-		// разрешаем только POST-запросы
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
 	body, _ := io.ReadAll(r.Body)
 	if err := r.Body.Close(); err != nil {
 		return
