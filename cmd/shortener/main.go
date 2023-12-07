@@ -2,7 +2,6 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"math/rand"
 	"net/http"
@@ -25,6 +24,7 @@ func (storage *Storage) ValueIn(s string) string {
 	return ""
 }
 
+// GenerateShortKey генерирует короткий URL
 func GenerateShortKey() string {
 	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	const keyLength = 6
@@ -64,6 +64,9 @@ func (storage *Storage) ChoiceHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (storage *Storage) PostHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "There is not true method", http.StatusBadRequest)
+	}
 	body, _ := io.ReadAll(r.Body)
 	if err := r.Body.Close(); err != nil {
 		return
@@ -78,7 +81,6 @@ func (storage *Storage) PostHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		shortkey := GenerateShortKey()
-		fmt.Println("ShortKey: ", shortkey)
 		for {
 			if _, in := (*storage)[shortkey]; !in {
 				(*storage)[shortkey] = string(body)
@@ -90,10 +92,12 @@ func (storage *Storage) PostHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	fmt.Println(storage)
 }
 
 func (storage *Storage) GetHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "There is not true method", http.StatusBadRequest)
+	}
 	if _, in := (*storage)[r.URL.Path[1:]]; in {
 		w.Header().Set("Location", (*storage)[r.URL.Path[1:]])
 		w.WriteHeader(http.StatusTemporaryRedirect)
