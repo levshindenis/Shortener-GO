@@ -38,8 +38,6 @@ func GenerateShortKey() string {
 	return string(shortKey)
 }
 
-var storage Storage
-
 // функция main вызывается автоматически при запуске приложения
 func main() {
 	if err := run(); err != nil {
@@ -49,22 +47,23 @@ func main() {
 
 // функция run будет полезна при инициализации зависимостей сервера перед запуском
 func run() error {
+	var storage Storage
 	storage.EmptyStorage()
-	return http.ListenAndServe(`:8080`, http.HandlerFunc(ChoiceHandler))
+	return http.ListenAndServe(`:8080`, http.HandlerFunc(storage.ChoiceHandler))
 }
 
-func ChoiceHandler(w http.ResponseWriter, r *http.Request) {
+func (storage *Storage) ChoiceHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
-		PostHandler(w, r)
+		storage.PostHandler(w, r)
 	case http.MethodGet:
-		GetHandler(w, r)
+		storage.GetHandler(w, r)
 	default:
 		http.Error(w, "Unsupported request method", http.StatusBadRequest)
 	}
 }
 
-func PostHandler(w http.ResponseWriter, r *http.Request) {
+func (storage *Storage) PostHandler(w http.ResponseWriter, r *http.Request) {
 	body, _ := io.ReadAll(r.Body)
 	if err := r.Body.Close(); err != nil {
 		return
@@ -81,8 +80,8 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 		shortkey := GenerateShortKey()
 		fmt.Println("ShortKey: ", shortkey)
 		for {
-			if _, in := storage[shortkey]; !in {
-				storage[shortkey] = string(body)
+			if _, in := (*storage)[shortkey]; !in {
+				(*storage)[shortkey] = string(body)
 				break
 			}
 			shortkey = GenerateShortKey()
@@ -91,9 +90,14 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	fmt.Println(storage)
 }
 
-func GetHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Location", storage[r.URL.Path[1:]])
-	w.WriteHeader(http.StatusTemporaryRedirect)
+func (storage *Storage) GetHandler(w http.ResponseWriter, r *http.Request) {
+	if _, in := (*storage)[r.URL.Path[1:]]; in {
+		w.Header().Set("Location", (*storage)[r.URL.Path[1:]])
+		w.WriteHeader(http.StatusTemporaryRedirect)
+	} else {
+		http.Error(w, "There is no such shortUrl", http.StatusBadRequest)
+	}
 }
