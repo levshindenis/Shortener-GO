@@ -3,14 +3,42 @@ package main
 
 import (
 	"fmt"
+	"io"
+	"math/rand"
 	"net/http"
+	"time"
 )
 
 type Storage map[string]string
 
-//func Encode(s string) string {
-//
-//}
+func (storage *Storage) EmptyStorage() {
+	*storage = make(map[string]string)
+}
+
+// ValueIn проверяет наличие значения в map
+func (storage *Storage) ValueIn(s string) string {
+	for key, value := range *storage {
+		if value == s {
+			return key
+		}
+	}
+	return ""
+}
+
+func GenerateShortKey() string {
+	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	const keyLength = 6
+
+	source := rand.NewSource(time.Now().UnixNano())
+	rng := rand.New(source)
+	shortKey := make([]byte, keyLength)
+	for i := range shortKey {
+		shortKey[i] = charset[rng.Intn(len(charset))]
+	}
+	return string(shortKey)
+}
+
+var storage Storage
 
 // функция main вызывается автоматически при запуске приложения
 func main() {
@@ -21,47 +49,60 @@ func main() {
 
 // функция run будет полезна при инициализации зависимостей сервера перед запуском
 func run() error {
-	var storage Storage
-	mux := http.NewServeMux()
-	mux.HandleFunc(`/`, PostShortenerHandler(&storage))
-	mux.HandleFunc(`/{id}`, GetShortenerHandler(&storage))
-	return http.ListenAndServe(`:8080`, mux)
+	storage.EmptyStorage()
+	return http.ListenAndServe(`:8080`, http.HandlerFunc(ChoiceHandler))
 }
 
-func PostShortenerHandler(storage *Storage) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			// разрешаем только POST-запросы
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		//if r.Header.Get("Content-Type") != "text/plain" {
-		//	w.WriteHeader(http.StatusBadRequest)
-		//	return
-		//}
-
-		//установим правильный заголовок для типа данных
-		//w.WriteHeader(http.StatusCreated)
-		w.Header().Set("Content-Type", "text/plain")
-		fmt.Println("Host: ", r.Host)
-		fmt.Println("URL: ", r.URL)
-		fmt.Println("Body: ", r.Body)
-		fmt.Println(storage)
-		//fmt.Println("Psth: ", r.URL.Path)
-		//fmt.Println("Storage: ", storage)
+func ChoiceHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodPost:
+		PostHandler(w, r)
+	case http.MethodGet:
+		GetHandler(w, r)
+	default:
+		http.Error(w, "Unsupported request method", http.StatusBadRequest)
 	}
 }
 
-func GetShortenerHandler(storage *Storage) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			// разрешаем только POST-запросы
-			w.WriteHeader(http.StatusMethodNotAllowed)
+func PostHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Header.Get("Content-Type") != "text/plain" {
+		// разрешаем только POST-запросы
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	body, _ := io.ReadAll(r.Body)
+	if err := r.Body.Close(); err != nil {
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	w.Header().Set("Content-Type", "text/plain")
+
+	if key := storage.ValueIn(string(body)); key != "" {
+		if _, err := w.Write([]byte("http://localhost:8080/" + key)); err != nil {
 			return
 		}
-
-		// установим правильный заголовок для типа данных
-		w.Header().Set("Content-Type", "application/json")
-		fmt.Println(storage)
+	} else {
+		shortkey := GenerateShortKey()
+		fmt.Println("ShortKey: ", shortkey)
+		for {
+			if _, in := storage[shortkey]; !in {
+				storage[shortkey] = string(body)
+				break
+			}
+			shortkey = GenerateShortKey()
+		}
+		if _, err := w.Write([]byte("http://localhost:8080/" + shortkey)); err != nil {
+			return
+		}
 	}
+}
+
+func GetHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusTemporaryRedirect)
+	if err := r.ParseForm(); err != nil {
+		return
+	}
+	w.Header().Set("Location", storage[r.Form.Get("id")])
 }
