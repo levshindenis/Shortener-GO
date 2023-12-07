@@ -95,8 +95,5 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 
 func GetHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusTemporaryRedirect)
-	if err := r.ParseForm(); err != nil {
-		return
-	}
-	w.Header().Set("Location", storage[r.Form.Get("id")])
+	w.Header().Set("Location", storage[r.URL.Path[1:]])
 }
