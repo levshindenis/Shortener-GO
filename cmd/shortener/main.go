@@ -5,6 +5,7 @@ import (
 	"io"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -66,10 +67,15 @@ func (storage *Storage) ChoiceHandler(w http.ResponseWriter, r *http.Request) {
 func (storage *Storage) PostHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "There is not true method", http.StatusBadRequest)
+		return
 	}
 	body, _ := io.ReadAll(r.Body)
 	if err := r.Body.Close(); err != nil {
 		return
+	}
+
+	if _, err := url.ParseRequestURI(string(body)); err != nil {
+		http.Error(w, "There is not url", http.StatusBadRequest)
 	}
 
 	w.Header().Set("Content-Type", "text/plain")
