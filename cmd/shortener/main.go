@@ -70,8 +70,8 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "text/plain")
+	w.WriteHeader(http.StatusCreated)
 
 	if key := storage.ValueIn(string(body)); key != "" {
 		if _, err := w.Write([]byte("http://localhost:8080/" + key)); err != nil {
@@ -94,6 +94,6 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusTemporaryRedirect)
 	w.Header().Set("Location", storage[r.URL.Path[1:]])
+	w.WriteHeader(http.StatusTemporaryRedirect)
 }
