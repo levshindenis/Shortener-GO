@@ -81,7 +81,7 @@ func TestStorage_GetHandler(t *testing.T) {
 			emptyBody:    true,
 		},
 		{
-			name:         "No url",
+			name:         "Bad url",
 			method:       http.MethodGet,
 			url:          "GyuAe0",
 			expectedCode: http.StatusBadRequest,
