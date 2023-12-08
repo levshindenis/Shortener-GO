@@ -2,6 +2,7 @@
 package main
 
 import (
+	"github.com/go-chi/chi/v5"
 	"io"
 	"math/rand"
 	"net/http"
@@ -50,18 +51,12 @@ func main() {
 func run() error {
 	var storage Storage
 	storage.EmptyStorage()
-	return http.ListenAndServe(`:8080`, http.HandlerFunc(storage.ChoiceHandler))
-}
-
-func (storage *Storage) ChoiceHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodPost:
-		storage.PostHandler(w, r)
-	case http.MethodGet:
-		storage.GetHandler(w, r)
-	default:
-		http.Error(w, "Unsupported request method", http.StatusBadRequest)
-	}
+	r := chi.NewRouter()
+	r.Route("/", func(r chi.Router) {
+		r.Post("/", storage.PostHandler)
+		r.Get("/{id}", storage.GetHandler)
+	})
+	return http.ListenAndServe(`:8080`, r)
 }
 
 func (storage *Storage) PostHandler(w http.ResponseWriter, r *http.Request) {
