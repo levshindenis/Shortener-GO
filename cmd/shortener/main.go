@@ -47,16 +47,21 @@ func main() {
 	}
 }
 
-// функция run будет полезна при инициализации зависимостей сервера перед запуском
-func run() error {
-	var storage Storage
-	storage.EmptyStorage()
+func (storage *Storage) MyRouter() chi.Router {
 	r := chi.NewRouter()
 	r.Route("/", func(r chi.Router) {
 		r.Post("/", storage.PostHandler)
 		r.Get("/{id}", storage.GetHandler)
 	})
-	return http.ListenAndServe(`:8080`, r)
+
+	return r
+}
+
+// функция run будет полезна при инициализации зависимостей сервера перед запуском
+func run() error {
+	var storage Storage
+	storage.EmptyStorage()
+	return http.ListenAndServe(`:8080`, storage.MyRouter())
 }
 
 func (storage *Storage) PostHandler(w http.ResponseWriter, r *http.Request) {
@@ -71,6 +76,7 @@ func (storage *Storage) PostHandler(w http.ResponseWriter, r *http.Request) {
 
 	if _, err := url.ParseRequestURI(string(body)); err != nil {
 		http.Error(w, "There is not url", http.StatusBadRequest)
+		return
 	}
 
 	w.Header().Set("Content-Type", "text/plain")
@@ -99,7 +105,8 @@ func (storage *Storage) GetHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "There is not true method", http.StatusBadRequest)
 	}
-
+	//r.URL.Path[1:]
+	//chi.URLParam(r, "id")
 	if _, in := (*storage)[r.URL.Path[1:]]; in {
 		w.Header().Add("Location", (*storage)[r.URL.Path[1:]])
 		w.WriteHeader(http.StatusTemporaryRedirect)
