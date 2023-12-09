@@ -99,7 +99,7 @@ func (storage *Storage) GetHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "There is not true method", http.StatusBadRequest)
 	}
-	//chi.
+
 	if _, in := (*storage)[r.URL.Path[1:]]; in {
 		w.Header().Add("Location", (*storage)[r.URL.Path[1:]])
 		w.WriteHeader(http.StatusTemporaryRedirect)
