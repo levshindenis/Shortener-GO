@@ -48,12 +48,12 @@ func main() {
 			}
 			fmt.Println(resp)
 		case "2":
-			myUrl := "http://localhost:8080/" + value
-			resp, err := client.R().Get(myUrl)
+			myURL := "http://localhost:8080/" + value
+			resp, err := client.R().Get(myURL)
 			if err != nil {
 				fmt.Println(strings.Split(err.Error(), "\"")[1])
 			} else {
-				if resp.RawResponse.Request.Referer() == myUrl {
+				if resp.RawResponse.Request.Referer() == myURL {
 					fmt.Println(resp.RawResponse.Request.URL)
 				} else if resp.RawResponse.Request.Referer() != "" {
 					fmt.Println(resp.RawResponse.Request.Referer())
