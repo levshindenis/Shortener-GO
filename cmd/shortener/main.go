@@ -99,8 +99,9 @@ func (storage *Storage) GetHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "There is not true method", http.StatusBadRequest)
 	}
+	//chi.
 	if _, in := (*storage)[r.URL.Path[1:]]; in {
-		w.Header().Set("Location", (*storage)[r.URL.Path[1:]])
+		w.Header().Add("Location", (*storage)[r.URL.Path[1:]])
 		w.WriteHeader(http.StatusTemporaryRedirect)
 	} else {
 		http.Error(w, "There is no such shortUrl", http.StatusBadRequest)

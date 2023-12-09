@@ -67,7 +67,7 @@ func TestStorage_GetHandler(t *testing.T) {
 		{
 			name:         "Good test",
 			method:       http.MethodGet,
-			url:          "GyuRe0",
+			url:          "/GyuRe0",
 			expectedCode: http.StatusTemporaryRedirect,
 			expectedBody: "https://yandex.ru/",
 			emptyBody:    false,
@@ -75,7 +75,7 @@ func TestStorage_GetHandler(t *testing.T) {
 		{
 			name:         "Bad method",
 			method:       http.MethodPost,
-			url:          "GyuRe0",
+			url:          "/GyuRe0",
 			expectedCode: http.StatusBadRequest,
 			expectedBody: "",
 			emptyBody:    true,
@@ -83,7 +83,7 @@ func TestStorage_GetHandler(t *testing.T) {
 		{
 			name:         "Bad url",
 			method:       http.MethodGet,
-			url:          "GyuAe0",
+			url:          "/GyuAe0",
 			expectedCode: http.StatusBadRequest,
 			expectedBody: "",
 			emptyBody:    true,
@@ -94,8 +94,7 @@ func TestStorage_GetHandler(t *testing.T) {
 			var storage Storage
 			storage.EmptyStorage()
 			storage["GyuRe0"] = "https://yandex.ru/"
-			reqURL := "/" + tt.url
-			r := httptest.NewRequest(tt.method, reqURL, nil)
+			r := httptest.NewRequest(tt.method, tt.url, nil)
 			w := httptest.NewRecorder()
 			storage.GetHandler(w, r)
 
