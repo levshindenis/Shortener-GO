@@ -54,7 +54,7 @@ func TestStorage_PostHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			serv.sa.SetShortUrlAddress(tt.address)
+			serv.sa.SetShortURLAddress(tt.address)
 			r := httptest.NewRequest(tt.method, "/", strings.NewReader(tt.requestBody))
 			w := httptest.NewRecorder()
 			PostHandler(&serv.storage, &serv.sa).ServeHTTP(w, r)

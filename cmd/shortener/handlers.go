@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/levshindenis/sprint1/cmd/config"
 	"io"
 	"net/http"
@@ -14,6 +15,7 @@ func PostHandler(storage *Storage, sa *config.ServerAddress) http.HandlerFunc {
 			return
 		}
 		body, _ := io.ReadAll(r.Body)
+		fmt.Println(string(body))
 		if err := r.Body.Close(); err != nil {
 			return
 		}
@@ -25,7 +27,7 @@ func PostHandler(storage *Storage, sa *config.ServerAddress) http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "text/plain")
 		w.WriteHeader(http.StatusCreated)
-		myAddress := sa.GetShortURLAddress() + "/"
+		myAddress := "http://" + sa.GetShortURLAddress() + "/"
 		if key := storage.ValueIn(string(body)); key != "" {
 			if _, err := w.Write([]byte(myAddress + key)); err != nil {
 				return
