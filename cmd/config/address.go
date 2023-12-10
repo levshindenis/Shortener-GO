@@ -4,28 +4,28 @@ import "flag"
 
 type ServerAddress struct {
 	startAddress    string
-	shortUrlAddress string
+	shortURLAddress string
 }
 
 func (sa *ServerAddress) GetStartAddress() string {
 	return sa.startAddress
 }
 
-func (sa *ServerAddress) GetShortUrlAddress() string {
-	return sa.shortUrlAddress
+func (sa *ServerAddress) GetShortURLAddress() string {
+	return sa.shortURLAddress
 }
 
 func (sa *ServerAddress) SetStartAddress(value string) {
 	sa.startAddress = value
 }
 
-func (sa *ServerAddress) SetShortUrlAddress(value string) {
-	sa.shortUrlAddress = value
+func (sa *ServerAddress) SetShortURLAddress(value string) {
+	sa.shortURLAddress = value
 }
 
 func ParseFlags(sa *ServerAddress) {
 	flag.StringVar(&sa.startAddress, "a", "localhost:8080", "address and port to run server")
-	flag.StringVar(&sa.shortUrlAddress, "b", "localhost:8080", "address and port for base short URL")
+	flag.StringVar(&sa.shortURLAddress, "b", "localhost:8080", "address and port for base short URL")
 
 	flag.Parse()
 }

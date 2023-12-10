@@ -25,7 +25,7 @@ func PostHandler(storage *Storage, sa *config.ServerAddress) http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "text/plain")
 		w.WriteHeader(http.StatusCreated)
-		myAddress := "http://" + sa.GetShortUrlAddress() + "/"
+		myAddress := sa.GetShortURLAddress() + "/"
 		if key := storage.ValueIn(string(body)); key != "" {
 			if _, err := w.Write([]byte(myAddress + key)); err != nil {
 				return
