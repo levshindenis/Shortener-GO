@@ -25,7 +25,7 @@ func (sa *ServerAddress) SetShortURLAddress(value string) {
 
 func ParseFlags(sa *ServerAddress) {
 	flag.StringVar(&sa.startAddress, "a", "localhost:8080", "address and port to run server")
-	flag.StringVar(&sa.shortURLAddress, "b", "localhost:8080", "address and port for base short URL")
+	flag.StringVar(&sa.shortURLAddress, "b", "http://localhost:8080", "address and port for base short URL")
 
 	flag.Parse()
 }
