@@ -2,7 +2,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/levshindenis/sprint1/cmd/config"
 	"math/rand"
@@ -38,7 +37,6 @@ func run() error {
 
 	var sa config.ServerAddress
 	config.ParseFlags(&sa)
-	fmt.Println(sa)
 
 	r := chi.NewRouter()
 	r.Route("/", func(r chi.Router) {
