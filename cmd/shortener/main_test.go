@@ -1,24 +1,35 @@
 package main
 
 import (
+	"github.com/levshindenis/sprint1/cmd/config"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"strings"
+
+	//"strings"
 	"testing"
 )
 
 func TestStorage_PostHandler(t *testing.T) {
+	var serv struct {
+		storage Storage
+		sa      config.ServerAddress
+	}
+	serv.storage.EmptyStorage()
+
 	tests := []struct {
 		name         string
 		method       string
+		address      string
 		requestBody  string
 		expectedCode int
 		emptyBody    bool
 	}{
 		{
-			name:         "Good test",
-			method:       http.MethodPost,
+			name:   "Good test",
+			method: http.MethodPost,
+
 			requestBody:  "https://yandex.ru/",
 			expectedCode: http.StatusCreated,
 			emptyBody:    false,
@@ -26,6 +37,7 @@ func TestStorage_PostHandler(t *testing.T) {
 		{
 			name:         "Bad method",
 			method:       http.MethodGet,
+			address:      "localhost:8000",
 			requestBody:  "https://yandex.ru/",
 			expectedCode: http.StatusBadRequest,
 			emptyBody:    true,
@@ -33,6 +45,7 @@ func TestStorage_PostHandler(t *testing.T) {
 		{
 			name:         "Bad url",
 			method:       http.MethodPost,
+			address:      "localhost:8000",
 			requestBody:  "Hello",
 			expectedCode: http.StatusBadRequest,
 			emptyBody:    true,
@@ -41,14 +54,13 @@ func TestStorage_PostHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var storage Storage
-			storage.EmptyStorage()
+			serv.sa.SetShortUrlAddress(tt.address)
 			r := httptest.NewRequest(tt.method, "/", strings.NewReader(tt.requestBody))
 			w := httptest.NewRecorder()
-			storage.PostHandler(w, r)
+			PostHandler(&serv.storage, &serv.sa).ServeHTTP(w, r)
 			assert.Equal(t, w.Code, tt.expectedCode, "Код ответа не совпадает с ожидаемым")
 			if !tt.emptyBody {
-				assert.Contains(t, w.Body.String(), "http://localhost:8080/",
+				assert.Contains(t, w.Body.String(), tt.address,
 					"Тело ответа не совпадает с ожидаемым")
 			}
 		})
@@ -56,6 +68,12 @@ func TestStorage_PostHandler(t *testing.T) {
 }
 
 func TestStorage_GetHandler(t *testing.T) {
+	var serv struct {
+		storage Storage
+	}
+	serv.storage.EmptyStorage()
+	serv.storage["GyuRe0"] = "https://yandex.ru/"
+
 	tests := []struct {
 		name         string
 		method       string
@@ -91,12 +109,10 @@ func TestStorage_GetHandler(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var storage Storage
-			storage.EmptyStorage()
-			storage["GyuRe0"] = "https://yandex.ru/"
+
 			r := httptest.NewRequest(tt.method, tt.url, nil)
 			w := httptest.NewRecorder()
-			storage.GetHandler(w, r)
+			GetHandler(&serv.storage).ServeHTTP(w, r)
 
 			assert.Equal(t, w.Code, tt.expectedCode, "Код ответа не совпадает с ожидаемым")
 			if !tt.emptyBody {

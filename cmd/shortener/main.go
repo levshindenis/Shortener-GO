@@ -3,6 +3,7 @@ package main
 
 import (
 	"github.com/go-chi/chi/v5"
+	"github.com/levshindenis/sprint1/cmd/config"
 	"math/rand"
 	"net/http"
 	"time"
@@ -29,19 +30,18 @@ func main() {
 	}
 }
 
-func (storage *Storage) MyRouter() chi.Router {
-	r := chi.NewRouter()
-	r.Route("/", func(r chi.Router) {
-		r.Post("/", storage.PostHandler)
-		r.Get("/{id}", storage.GetHandler)
-	})
-
-	return r
-}
-
 // функция run будет полезна при инициализации зависимостей сервера перед запуском
 func run() error {
 	var storage Storage
 	storage.EmptyStorage()
-	return http.ListenAndServe(`:8080`, storage.MyRouter())
+
+	var sa config.ServerAddress
+	config.ParseFlags(&sa)
+
+	r := chi.NewRouter()
+	r.Route("/", func(r chi.Router) {
+		r.Post("/", PostHandler(&storage, &sa))
+		r.Get("/{id}", GetHandler(&storage))
+	})
+	return http.ListenAndServe(sa.GetStartAddress(), r)
 }
