@@ -1,31 +1,43 @@
 package config
 
-import "flag"
+import (
+	"flag"
+	"os"
+)
 
 type ServerAddress struct {
-	startAddress    string
-	shortURLAddress string
+	startAddress string
+	shortBaseURL string
 }
 
 func (sa *ServerAddress) GetStartAddress() string {
 	return sa.startAddress
 }
 
-func (sa *ServerAddress) GetShortURLAddress() string {
-	return sa.shortURLAddress
+func (sa *ServerAddress) GetShortBaseURL() string {
+	return sa.shortBaseURL
 }
 
 func (sa *ServerAddress) SetStartAddress(value string) {
 	sa.startAddress = value
 }
 
-func (sa *ServerAddress) SetShortURLAddress(value string) {
-	sa.shortURLAddress = value
+func (sa *ServerAddress) SetShortBaseURL(value string) {
+	sa.shortBaseURL = value
 }
 
 func ParseFlags(sa *ServerAddress) {
 	flag.StringVar(&sa.startAddress, "a", "localhost:8080", "address and port to run server")
-	flag.StringVar(&sa.shortURLAddress, "b", "http://localhost:8080", "address and port for base short URL")
+	flag.StringVar(&sa.shortBaseURL, "b", "http://localhost:8080", "address and port for base short URL")
 
 	flag.Parse()
+
+	if envStartAddress := os.Getenv("SERVER_ADDRESS"); envStartAddress != "" {
+		sa.SetStartAddress(envStartAddress)
+	}
+
+	if envShortBaseURL := os.Getenv("BASE_URL"); envShortBaseURL != "" {
+		sa.SetShortBaseURL(envShortBaseURL)
+	}
+
 }
