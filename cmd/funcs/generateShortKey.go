@@ -1,4 +1,4 @@
-package my_func
+package funcs
 
 import (
 	"math/rand"

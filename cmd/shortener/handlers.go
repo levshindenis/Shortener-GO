@@ -6,7 +6,7 @@ import (
 	"net/url"
 
 	"github.com/levshindenis/sprint1/cmd/config"
-	"github.com/levshindenis/sprint1/cmd/my_func"
+	"github.com/levshindenis/sprint1/cmd/funcs"
 )
 
 func PostHandler(storage *Storage, sa *config.ServerAddress) http.HandlerFunc {
@@ -33,13 +33,13 @@ func PostHandler(storage *Storage, sa *config.ServerAddress) http.HandlerFunc {
 				return
 			}
 		} else {
-			shortKey := my_func.GenerateShortKey()
+			shortKey := funcs.GenerateShortKey()
 			for {
 				if _, in := (*storage)[shortKey]; !in {
 					(*storage)[shortKey] = string(body)
 					break
 				}
-				shortKey = my_func.GenerateShortKey()
+				shortKey = funcs.GenerateShortKey()
 			}
 			if _, err := w.Write([]byte(myAddress + shortKey)); err != nil {
 				return
