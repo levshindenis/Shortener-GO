@@ -1,10 +1,12 @@
 package main
 
 import (
-	"github.com/levshindenis/sprint1/cmd/config"
 	"io"
 	"net/http"
 	"net/url"
+
+	"github.com/levshindenis/sprint1/cmd/config"
+	"github.com/levshindenis/sprint1/cmd/my_func"
 )
 
 func PostHandler(storage *Storage, sa *config.ServerAddress) http.HandlerFunc {
@@ -26,20 +28,20 @@ func PostHandler(storage *Storage, sa *config.ServerAddress) http.HandlerFunc {
 		w.Header().Set("Content-Type", "text/plain")
 		w.WriteHeader(http.StatusCreated)
 		myAddress := sa.GetShortBaseURL() + "/"
-		if key := storage.ValueIn(string(body)); key != "" {
-			if _, err := w.Write([]byte(myAddress + key)); err != nil {
+		if value, ok := (*storage)[string(body)]; ok {
+			if _, err := w.Write([]byte(myAddress + value)); err != nil {
 				return
 			}
 		} else {
-			shortkey := GenerateShortKey()
+			shortKey := my_func.GenerateShortKey()
 			for {
-				if _, in := (*storage)[shortkey]; !in {
-					(*storage)[shortkey] = string(body)
+				if _, in := (*storage)[shortKey]; !in {
+					(*storage)[shortKey] = string(body)
 					break
 				}
-				shortkey = GenerateShortKey()
+				shortKey = my_func.GenerateShortKey()
 			}
-			if _, err := w.Write([]byte(myAddress + shortkey)); err != nil {
+			if _, err := w.Write([]byte(myAddress + shortKey)); err != nil {
 				return
 			}
 		}

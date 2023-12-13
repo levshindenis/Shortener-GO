@@ -2,26 +2,12 @@
 package main
 
 import (
-	"github.com/go-chi/chi/v5"
-	"github.com/levshindenis/sprint1/cmd/config"
-	"math/rand"
 	"net/http"
-	"time"
+
+	"github.com/go-chi/chi/v5"
+
+	"github.com/levshindenis/sprint1/cmd/config"
 )
-
-// GenerateShortKey генерирует короткий URL
-func GenerateShortKey() string {
-	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	const keyLength = 6
-
-	source := rand.NewSource(time.Now().UnixNano())
-	rng := rand.New(source)
-	shortKey := make([]byte, keyLength)
-	for i := range shortKey {
-		shortKey[i] = charset[rng.Intn(len(charset))]
-	}
-	return string(shortKey)
-}
 
 // функция main вызывается автоматически при запуске приложения
 func main() {

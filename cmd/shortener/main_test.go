@@ -1,14 +1,14 @@
 package main
 
 import (
-	"github.com/levshindenis/sprint1/cmd/config"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"strings"
-
-	//"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/levshindenis/sprint1/cmd/config"
 )
 
 func TestStorage_PostHandler(t *testing.T) {
