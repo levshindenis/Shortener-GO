@@ -52,11 +52,14 @@ func main() {
 			myURL := "http://localhost:8080/" + value
 			resp, err := client.R().Get(myURL)
 			if err != nil {
+				fmt.Println("Err")
 				fmt.Println(strings.Split(err.Error(), "\"")[1])
 			} else {
 				if resp.RawResponse.Request.Referer() == myURL {
+					fmt.Println("NN Referer")
 					fmt.Println(resp.RawResponse.Request.URL)
 				} else if resp.RawResponse.Request.Referer() != "" {
+					fmt.Println("N Referer")
 					fmt.Println(resp.RawResponse.Request.Referer())
 				} else {
 					fmt.Println("Невозможно преобразовать короткий URL")

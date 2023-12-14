@@ -6,7 +6,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/levshindenis/sprint1/cmd/config"
+	"github.com/levshindenis/sprint1/internal/app/handlers"
 )
 
 // функция main вызывается автоматически при запуске приложения
@@ -18,16 +18,17 @@ func main() {
 
 // функция run будет полезна при инициализации зависимостей сервера перед запуском
 func run() error {
-	var storage Storage
-	storage.EmptyStorage()
+	var server handlers.API
+	server.Init()
 
-	var sa config.ServerAddress
-	config.ParseFlags(&sa)
+	return http.ListenAndServe(server.GetStartSA(), MyRouter(server))
+}
 
+func MyRouter(api handlers.API) *chi.Mux {
 	r := chi.NewRouter()
 	r.Route("/", func(r chi.Router) {
-		r.Post("/", PostHandler(&storage, &sa))
-		r.Get("/{id}", GetHandler(&storage))
+		r.Post("/", api.PostHandler)
+		r.Get("/{id}", api.GetHandler)
 	})
-	return http.ListenAndServe(sa.GetStartAddress(), r)
+	return r
 }

@@ -8,15 +8,14 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/levshindenis/sprint1/cmd/config"
+	"github.com/levshindenis/sprint1/internal/app/handlers"
 )
 
 func TestStorage_PostHandler(t *testing.T) {
 	var serv struct {
-		storage Storage
-		sa      config.ServerAddress
+		handlers.API
 	}
-	serv.storage.EmptyStorage()
+	serv.InitStorage()
 
 	tests := []struct {
 		name         string
@@ -54,10 +53,10 @@ func TestStorage_PostHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			serv.sa.SetShortBaseURL(tt.address)
+			serv.SetBaseSA(tt.address)
 			r := httptest.NewRequest(tt.method, "/", strings.NewReader(tt.requestBody))
 			w := httptest.NewRecorder()
-			PostHandler(&serv.storage, &serv.sa).ServeHTTP(w, r)
+			serv.PostHandler(w, r)
 			assert.Equal(t, w.Code, tt.expectedCode, "Код ответа не совпадает с ожидаемым")
 			if !tt.emptyBody {
 				assert.Contains(t, w.Body.String(), tt.address,
@@ -69,10 +68,10 @@ func TestStorage_PostHandler(t *testing.T) {
 
 func TestStorage_GetHandler(t *testing.T) {
 	var serv struct {
-		storage Storage
+		handlers.API
 	}
-	serv.storage.EmptyStorage()
-	serv.storage["GyuRe0"] = "https://yandex.ru/"
+	serv.InitStorage()
+	serv.SetStorage("GyuRe0", "https://yandex.ru/")
 
 	tests := []struct {
 		name         string
@@ -112,7 +111,7 @@ func TestStorage_GetHandler(t *testing.T) {
 
 			r := httptest.NewRequest(tt.method, tt.url, nil)
 			w := httptest.NewRecorder()
-			GetHandler(&serv.storage).ServeHTTP(w, r)
+			serv.GetHandler(w, r)
 
 			assert.Equal(t, w.Code, tt.expectedCode, "Код ответа не совпадает с ожидаемым")
 			if !tt.emptyBody {
