@@ -20,7 +20,7 @@ func (serv *HStorage) PostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	body, _ := io.ReadAll(r.Body)
 	if err := r.Body.Close(); err != nil {
-		return
+		panic(err)
 	}
 
 	if _, err := url.ParseRequestURI(string(body)); err != nil {
@@ -75,8 +75,9 @@ func (serv *HStorage) JSONPostHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Something bad with read body", http.StatusBadRequest)
 		return
 	}
-	defer r.Body.Close()
-
+	if err := r.Body.Close(); err != nil {
+		panic(err)
+	}
 	if err := json.Unmarshal(buf.Bytes(), &dec); err != nil {
 		http.Error(w, "Something bad with decoding JSON", http.StatusBadRequest)
 		return
@@ -96,4 +97,5 @@ func (serv *HStorage) JSONPostHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Something bad with write address", http.StatusBadRequest)
 		return
 	}
+
 }
