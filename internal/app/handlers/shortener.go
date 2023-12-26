@@ -2,9 +2,9 @@ package handlers
 
 import (
 	"bytes"
-	"compress/gzip"
 	"encoding/json"
 	"github.com/levshindenis/sprint1/internal/app/storages"
+	"github.com/levshindenis/sprint1/internal/app/tools"
 	"io"
 	"net/http"
 	"net/url"
@@ -21,17 +21,10 @@ func (serv *HStorage) PostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	var body []byte
 	if r.Header.Get("Content-Type") == "application/x-gzip" {
-		gz, err := gzip.NewReader(r.Body)
+		var err error
+		body, err = tools.Compression(r.Body)
 		if err != nil {
-			http.Error(w, "Something bad with gzip.Newreader", http.StatusBadRequest)
-			return
-		}
-
-		defer gz.Close()
-
-		body, err = io.ReadAll(gz)
-		if err != nil {
-			http.Error(w, "Something bad with ReadAll", http.StatusBadRequest)
+			http.Error(w, "Something bad with compression", http.StatusBadRequest)
 			return
 		}
 	} else {
