@@ -20,7 +20,7 @@ func (serv *HStorage) PostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var body []byte
-	if r.Header.Get("Content-Type") == "application/x-zip" {
+	if r.Header.Get("Content-Type") == "application/x-gzip" {
 		gz, err := gzip.NewReader(r.Body)
 		if err != nil {
 			http.Error(w, "Something bad with gzip.Newreader", http.StatusBadRequest)
