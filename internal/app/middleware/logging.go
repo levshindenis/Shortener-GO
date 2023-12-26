@@ -1,4 +1,4 @@
-package logging
+package middleware
 
 import (
 	"go.uber.org/zap"
@@ -34,7 +34,7 @@ func (r *loggingResponseWriter) WriteHeader(statusCode int) {
 }
 
 func WithLogging(h http.HandlerFunc) http.HandlerFunc {
-	logFn := func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		//Как добавить логгер, чтобы его не инициализировать постоянно?
 		logger, err := zap.NewDevelopment()
@@ -66,5 +66,4 @@ func WithLogging(h http.HandlerFunc) http.HandlerFunc {
 			"size", responseData.size, // получаем перехваченный размер ответа
 		)
 	}
-	return logFn
 }

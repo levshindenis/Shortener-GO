@@ -75,6 +75,7 @@ func (serv *HStorage) JSONPostHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Something bad with read body", http.StatusBadRequest)
 		return
 	}
+
 	if err := r.Body.Close(); err != nil {
 		panic(err)
 	}
@@ -97,5 +98,4 @@ func (serv *HStorage) JSONPostHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Something bad with write address", http.StatusBadRequest)
 		return
 	}
-
 }
