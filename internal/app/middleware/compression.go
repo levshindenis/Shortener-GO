@@ -38,10 +38,7 @@ func WithCompression(next http.HandlerFunc) http.HandlerFunc {
 			http.Error(w, "Something bad with gzip", http.StatusBadRequest)
 			return
 		}
-		if err = gz.Close(); err != nil {
-			http.Error(w, "Something bad with gzip.Close()", http.StatusBadRequest)
-			return
-		}
+		defer gz.Close()
 
 		w.Header().Set("Content-Encoding", "gzip")
 		// передаём обработчику страницы переменную типа gzipWriter для вывода данных
