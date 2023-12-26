@@ -39,10 +39,13 @@ func WithLogging(h http.HandlerFunc) http.HandlerFunc {
 		//Как добавить логгер, чтобы его не инициализировать постоянно?
 		logger, err := zap.NewDevelopment()
 		if err != nil {
-			// вызываем панику, если ошибка
-			panic(err)
+			http.Error(w, "Somethin bad with logger", http.StatusBadRequest)
+			return
 		}
-		defer logger.Sync()
+		if err = logger.Sync(); err != nil {
+			http.Error(w, "Something bad with logger.Sync", http.StatusBadRequest)
+			return
+		}
 
 		// делаем регистратор SugaredLogger
 		sugar := *logger.Sugar()
