@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"github.com/levshindenis/sprint1/internal/app/storages"
 	"io"
@@ -18,17 +19,33 @@ func (serv *HStorage) PostHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "There is not true method", http.StatusBadRequest)
 		return
 	}
-	body, _ := io.ReadAll(r.Body)
+	var body []byte
+	if r.Header.Get("Content-Type") == "application/x-zip" {
+		gz, err := gzip.NewReader(r.Body)
+		if err != nil {
+			http.Error(w, "Something bad with gzip.Newreader", http.StatusBadRequest)
+			return
+		}
+
+		defer gz.Close()
+
+		body, err = io.ReadAll(gz)
+		if err != nil {
+			http.Error(w, "Something bad with ReadAll", http.StatusBadRequest)
+			return
+		}
+	} else {
+		body, _ = io.ReadAll(r.Body)
+		if _, err := url.ParseRequestURI(string(body)); err != nil {
+			http.Error(w, "There is not url", http.StatusBadRequest)
+			return
+		}
+	}
+
 	if err := r.Body.Close(); err != nil {
 		panic(err)
 	}
 
-	if _, err := url.ParseRequestURI(string(body)); err != nil {
-		http.Error(w, string(body), http.StatusBadRequest)
-		return
-	}
-
-	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
 	myAddress := serv.GetAddress(string(body))
 
