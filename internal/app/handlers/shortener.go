@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/levshindenis/sprint1/internal/app/storages"
 	"io"
 	"net/http"
@@ -24,6 +25,7 @@ func (serv *HStorage) PostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if _, err := url.ParseRequestURI(string(body)); err != nil {
+		fmt.Println(string(body))
 		http.Error(w, "There is not url", http.StatusBadRequest)
 		return
 	}
