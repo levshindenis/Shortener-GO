@@ -2,10 +2,9 @@
 package main
 
 import (
+	"github.com/levshindenis/sprint1/internal/app/handlers"
 	"github.com/levshindenis/sprint1/internal/app/routers"
 	"net/http"
-
-	"github.com/levshindenis/sprint1/internal/app/handlers"
 )
 
 // функция main вызывается автоматически при запуске приложения

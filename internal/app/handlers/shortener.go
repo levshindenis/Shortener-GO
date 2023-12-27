@@ -20,8 +20,8 @@ func (serv *HStorage) PostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var body []byte
+	var err error
 	if r.Header.Get("Content-Type") == "application/x-gzip" {
-		var err error
 		body, err = tools.Compression(r.Body)
 		if err != nil {
 			http.Error(w, "Something bad with compression", http.StatusBadRequest)
@@ -29,20 +29,22 @@ func (serv *HStorage) PostHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		body, _ = io.ReadAll(r.Body)
-		if _, err := url.ParseRequestURI(string(body)); err != nil {
+		if _, err = url.ParseRequestURI(string(body)); err != nil {
 			http.Error(w, "There is not url", http.StatusBadRequest)
 			return
 		}
 	}
-
-	if err := r.Body.Close(); err != nil {
-		panic(err)
-	}
+	defer r.Body.Close()
 
 	w.WriteHeader(http.StatusCreated)
-	myAddress := serv.GetAddress(string(body))
 
-	if _, err := w.Write([]byte(myAddress)); err != nil {
+	address, err := serv.GetAddress(string(body))
+	if err != nil {
+		http.Error(w, "Something bad with GetAddress", http.StatusBadRequest)
+		return
+	}
+
+	if _, err := w.Write([]byte(address)); err != nil {
 		http.Error(w, "Something bad with write address", http.StatusBadRequest)
 		return
 	}
@@ -62,14 +64,15 @@ func (serv *HStorage) GetHandler(w http.ResponseWriter, r *http.Request) {
 
 func (serv *HStorage) JSONPostHandler(w http.ResponseWriter, r *http.Request) {
 	type Decoder struct {
-		MyURL string `json:"url"`
+		ShortURL string `json:"url"`
 	}
 	type Encoder struct {
-		MyURL string `json:"result"`
+		LongURL string `json:"result"`
 	}
 	var enc Encoder
 	var dec Decoder
 	var buf bytes.Buffer
+	var err error
 
 	if r.Method != http.MethodPost {
 		http.Error(w, "There is not true method", http.StatusBadRequest)
@@ -85,10 +88,8 @@ func (serv *HStorage) JSONPostHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Something bad with read body", http.StatusBadRequest)
 		return
 	}
+	defer r.Body.Close()
 
-	if err := r.Body.Close(); err != nil {
-		panic(err)
-	}
 	if err := json.Unmarshal(buf.Bytes(), &dec); err != nil {
 		http.Error(w, "Something bad with decoding JSON", http.StatusBadRequest)
 		return
@@ -97,13 +98,18 @@ func (serv *HStorage) JSONPostHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 
-	enc.MyURL = serv.GetAddress(dec.MyURL)
+	enc.LongURL, err = serv.GetAddress(dec.ShortURL)
+	if err != nil {
+		http.Error(w, "Something bad with GetAddress", http.StatusBadRequest)
+		return
+	}
 
 	resp, err := json.Marshal(enc)
 	if err != nil {
 		http.Error(w, "Something bad with encoding JSON", http.StatusBadRequest)
 		return
 	}
+
 	if _, err = w.Write(resp); err != nil {
 		http.Error(w, "Something bad with write address", http.StatusBadRequest)
 		return
