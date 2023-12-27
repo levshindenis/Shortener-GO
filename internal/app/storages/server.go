@@ -2,6 +2,7 @@ package storages
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/levshindenis/sprint1/internal/app/config"
 	"github.com/levshindenis/sprint1/internal/app/tools"
 	"io"
@@ -61,11 +62,11 @@ func (serv *ServerStorage) SetFilePath(value string) {
 }
 
 func (serv *ServerStorage) MakeDir() {
-	serv.SetFilePath("../.." + serv.GetFilePath())
+	myArr := strings.Split(serv.GetFilePath(), "/")
+	serv.SetFilePath(strings.Join(myArr[1:], "/"))
+	fmt.Println(serv.GetFilePath())
 	if _, err := os.Stat(serv.GetFilePath()); err != nil {
-		myArr := strings.Split(serv.GetFilePath(), "/")
-
-		os.MkdirAll(strings.Join(myArr[:len(myArr)-1], "/"), 0777)
+		os.MkdirAll(strings.Join(myArr[1:len(myArr)-1], "/"), 0777)
 	}
 }
 
