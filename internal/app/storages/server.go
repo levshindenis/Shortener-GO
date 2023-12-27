@@ -2,7 +2,6 @@ package storages
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/levshindenis/sprint1/internal/app/config"
 	"github.com/levshindenis/sprint1/internal/app/tools"
 	"io"
@@ -61,18 +60,15 @@ func (serv *ServerStorage) SetFilePath(value string) {
 	serv.sa.SetFilePath(value)
 }
 
-// MakeDir создает папку по заданному пути
 func (serv *ServerStorage) MakeDir() {
-	serv.SetFilePath("./." + serv.GetFilePath())
-	fmt.Println(serv.GetFilePath())
+	serv.SetFilePath("../.." + serv.GetFilePath())
 	if _, err := os.Stat(serv.GetFilePath()); err != nil {
 		myArr := strings.Split(serv.GetFilePath(), "/")
+
 		os.MkdirAll(strings.Join(myArr[:len(myArr)-1], "/"), 0777)
 	}
 }
 
-// GetFileData 1) Если файла нет, то создает файл и заполняет его "[]"7
-//  2. Если файл есть, то считывает данные из файла и записывает в переменную
 func (serv *ServerStorage) GetFileData() {
 	type JSONData struct {
 		UUID  int    `json:"uuid"`
@@ -80,7 +76,7 @@ func (serv *ServerStorage) GetFileData() {
 		Value string `json:"original_url"`
 	}
 
-	file, _ := os.OpenFile(serv.GetFilePath(), os.O_RDWR|os.O_CREATE, 0777)
+	file, _ := os.OpenFile(serv.GetFilePath(), os.O_RDWR|os.O_CREATE, 0666)
 	defer file.Close()
 
 	fileInfo, _ := os.Stat(serv.GetFilePath())
@@ -128,21 +124,28 @@ func (serv *ServerStorage) GetAddress(str string) (string, error) {
 }
 
 func (serv *ServerStorage) Save(key string, value string) error {
+
+	if serv.GetFilePath() == "" {
+		return nil
+	}
+
 	type JSONData struct {
 		UUID  int    `json:"uuid"`
 		Key   string `json:"short_url"`
 		Value string `json:"original_url"`
 	}
 
-	file, err := os.OpenFile(serv.GetFilePath(), os.O_RDWR, 0777)
+	file, err := os.OpenFile(serv.GetFilePath(), os.O_RDWR, 0666)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
+	//file.Truncate(0) //переписать эту функцию так, чтобы сначала считывались данные, файл затирался
+	// , а потом перезаписывался
 
 	fromFileData, err := io.ReadAll(file)
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	var jsonData []JSONData
