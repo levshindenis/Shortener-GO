@@ -62,6 +62,9 @@ func (serv *ServerStorage) SetFilePath(value string) {
 
 func (serv *ServerStorage) MakeDir() {
 	serv.SetFilePath("../.." + serv.GetFilePath())
+	if !strings.Contains(serv.GetFilePath(), ".json") {
+		serv.SetFilePath(serv.GetFilePath() + "/short-url-db.json")
+	}
 	if _, err := os.Stat(serv.GetFilePath()); err != nil {
 		myArr := strings.Split(serv.GetFilePath(), "/")
 
