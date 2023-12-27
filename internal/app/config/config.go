@@ -2,6 +2,7 @@ package config
 
 import (
 	"flag"
+	"go.uber.org/zap"
 	"os"
 )
 
@@ -53,4 +54,16 @@ func (sa *ServerConfig) ParseFlags() {
 	if envFilePath := os.Getenv("FILE_STORAGE_PATH"); envFilePath != "" {
 		sa.SetFilePath(envFilePath)
 	}
+
+	logger, err := zap.NewDevelopment()
+	if err != nil {
+		return
+	}
+	defer logger.Sync()
+
+	// делаем регистратор SugaredLogger
+	sugar := *logger.Sugar()
+	sugar.Infoln(
+		"filePath", sa.GetFilePath(),
+	)
 }
