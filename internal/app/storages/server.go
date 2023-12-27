@@ -2,6 +2,7 @@ package storages
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/levshindenis/sprint1/internal/app/config"
 	"github.com/levshindenis/sprint1/internal/app/tools"
 	"io"
@@ -61,7 +62,10 @@ func (serv *ServerStorage) SetFilePath(value string) {
 }
 
 func (serv *ServerStorage) MakeDir() {
-	serv.SetFilePath("../.." + serv.GetFilePath())
+	//serv.SetFilePath("../.." + serv.GetFilePath())
+	myArr := strings.Split(serv.GetFilePath(), "/")
+	serv.SetFilePath(strings.Join(myArr[1:], "/"))
+	fmt.Println(serv.GetFilePath())
 	if !strings.Contains(serv.GetFilePath(), ".json") {
 		serv.SetFilePath(serv.GetFilePath() + "/short-url-db.json")
 	}
