@@ -136,8 +136,9 @@ func (serv *ServerStorage) Save(key string, value string) error {
 
 	file, err := os.OpenFile(serv.GetFilePath(), os.O_RDWR, 0777)
 	if err != nil {
-		return err
+		panic(err)
 	}
+	defer file.Close()
 
 	fromFileData, err := io.ReadAll(file)
 	if err != nil {
@@ -165,17 +166,5 @@ func (serv *ServerStorage) Save(key string, value string) error {
 		return err
 	}
 
-	file.Close()
-
-	file, err = os.OpenFile(serv.GetFilePath(), os.O_RDWR, 0777)
-	if err != nil {
-		return err
-	}
-	fromFileData2, err := io.ReadAll(file)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(string(fromFileData2))
-	file.Close()
 	return nil
 }
