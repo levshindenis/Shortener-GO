@@ -61,15 +61,18 @@ func (serv *ServerStorage) SetFilePath(value string) {
 	serv.sa.SetFilePath(value)
 }
 
+// MakeDir создает папку по заданному пути
 func (serv *ServerStorage) MakeDir() {
-	myArr := strings.Split(serv.GetFilePath(), "/")
-	serv.SetFilePath(strings.Join(myArr[1:], "/"))
+	serv.SetFilePath("../.." + serv.GetFilePath())
 	fmt.Println(serv.GetFilePath())
 	if _, err := os.Stat(serv.GetFilePath()); err != nil {
-		os.MkdirAll(strings.Join(myArr[1:len(myArr)-1], "/"), 0777)
+		myArr := strings.Split(serv.GetFilePath(), "/")
+		os.MkdirAll(strings.Join(myArr[:len(myArr)-1], "/"), 0777)
 	}
 }
 
+// GetFileData 1) Если файла нет, то создает файл и заполняет его "[]"7
+//  2. Если файл есть, то считывает данные из файла и записывает в переменную
 func (serv *ServerStorage) GetFileData() {
 	type JSONData struct {
 		UUID  int    `json:"uuid"`
@@ -77,7 +80,7 @@ func (serv *ServerStorage) GetFileData() {
 		Value string `json:"original_url"`
 	}
 
-	file, _ := os.OpenFile(serv.GetFilePath(), os.O_RDWR|os.O_CREATE, 0666)
+	file, _ := os.OpenFile(serv.GetFilePath(), os.O_RDWR|os.O_CREATE, 0777)
 	defer file.Close()
 
 	fileInfo, _ := os.Stat(serv.GetFilePath())
@@ -136,7 +139,7 @@ func (serv *ServerStorage) Save(key string, value string) error {
 		Value string `json:"original_url"`
 	}
 
-	file, err := os.OpenFile(serv.GetFilePath(), os.O_RDWR, 0666)
+	file, err := os.OpenFile(serv.GetFilePath(), os.O_RDWR, 0777)
 	if err != nil {
 		return err
 	}
