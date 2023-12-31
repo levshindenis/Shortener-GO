@@ -63,7 +63,7 @@ func (serv *ServerStorage) SetFilePath(value string) {
 
 // MakeDir создает папку по заданному пути
 func (serv *ServerStorage) MakeDir() {
-	serv.SetFilePath("../.." + serv.GetFilePath())
+	serv.SetFilePath("./." + serv.GetFilePath())
 	fmt.Println(serv.GetFilePath())
 	if _, err := os.Stat(serv.GetFilePath()); err != nil {
 		myArr := strings.Split(serv.GetFilePath(), "/")

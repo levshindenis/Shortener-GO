@@ -40,6 +40,7 @@ func (sa *ServerConfig) ParseFlags() {
 	flag.StringVar(&sa.startAddress, "a", "localhost:8080", "address and port to run shortener")
 	flag.StringVar(&sa.shortBaseURL, "b", "http://localhost:8080", "address and port for base short URL")
 	flag.StringVar(&sa.filePath, "f", "/tmp/short-url-db.json", "storage file path")
+	fmt.Println("flag: ", sa.GetFilePath())
 
 	flag.Parse()
 
