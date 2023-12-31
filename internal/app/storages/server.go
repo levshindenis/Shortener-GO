@@ -121,7 +121,7 @@ func (serv *ServerStorage) GetAddress(str string) (string, error) {
 			shortKey = tools.GenerateShortKey()
 		}
 		if err := serv.Save(shortKey, str); err != nil {
-			panic(err)
+			return "", err
 		}
 		return addr + shortKey, nil
 	}
@@ -136,7 +136,7 @@ func (serv *ServerStorage) Save(key string, value string) error {
 
 	file, err := os.OpenFile(serv.GetFilePath(), os.O_RDWR, 0777)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer file.Close()
 
