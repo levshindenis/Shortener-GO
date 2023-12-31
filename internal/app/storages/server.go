@@ -121,7 +121,7 @@ func (serv *ServerStorage) GetAddress(str string) (string, error) {
 			shortKey = tools.GenerateShortKey()
 		}
 		if err := serv.Save(shortKey, str); err != nil {
-			return "", err
+			panic(err)
 		}
 		return addr + shortKey, nil
 	}
