@@ -2,6 +2,7 @@ package config
 
 import (
 	"flag"
+	"fmt"
 	"os"
 )
 
@@ -51,6 +52,7 @@ func (sa *ServerConfig) ParseFlags() {
 	}
 
 	if envFilePath := os.Getenv("FILE_STORAGE_PATH"); envFilePath != "" {
+		fmt.Println(envFilePath)
 		sa.SetFilePath(envFilePath)
 	}
 }
