@@ -128,11 +128,6 @@ func (serv *ServerStorage) GetAddress(str string) (string, error) {
 }
 
 func (serv *ServerStorage) Save(key string, value string) error {
-
-	if serv.GetFilePath() == "" {
-		return nil
-	}
-
 	type JSONData struct {
 		UUID  int    `json:"uuid"`
 		Key   string `json:"short_url"`
@@ -143,9 +138,6 @@ func (serv *ServerStorage) Save(key string, value string) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
-	//file.Truncate(0) //переписать эту функцию так, чтобы сначала считывались данные, файл затирался
-	// , а потом перезаписывался
 
 	fromFileData, err := io.ReadAll(file)
 	if err != nil {
@@ -173,5 +165,17 @@ func (serv *ServerStorage) Save(key string, value string) error {
 		return err
 	}
 
+	file.Close()
+
+	file, err = os.OpenFile(serv.GetFilePath(), os.O_RDWR, 0777)
+	if err != nil {
+		return err
+	}
+	fromFileData2, err := io.ReadAll(file)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(string(fromFileData2))
+	file.Close()
 	return nil
 }
