@@ -142,7 +142,7 @@ func (serv *ServerStorage) Save(key string, value string) error {
 
 	fromFileData, err := io.ReadAll(file)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	var jsonData []JSONData
