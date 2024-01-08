@@ -140,8 +140,6 @@ func (serv *ServerStorage) Save(key string, value string) error {
 		return err
 	}
 	defer file.Close()
-	//file.Truncate(0) //переписать эту функцию так, чтобы сначала считывались данные, файл затирался
-	// , а потом перезаписывался
 
 	fromFileData, err := io.ReadAll(file)
 	if err != nil {
