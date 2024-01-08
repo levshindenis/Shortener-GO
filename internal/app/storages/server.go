@@ -21,7 +21,6 @@ func (serv *ServerStorage) Init() {
 		serv.MakeDir()
 		serv.GetFileData()
 	}
-
 }
 
 func (serv *ServerStorage) GetStorage() Storage {
@@ -60,15 +59,21 @@ func (serv *ServerStorage) SetFilePath(value string) {
 	serv.sa.SetFilePath(value)
 }
 
+// MakeDir : После инициализации данных к расположению папки добавляю символы, чтобы создавалось в базовом каталоге
+//
+//	И создаю директорию по указанному адресу
 func (serv *ServerStorage) MakeDir() {
 	serv.SetFilePath("../.." + serv.GetFilePath())
 	if _, err := os.Stat(serv.GetFilePath()); err != nil {
 		myArr := strings.Split(serv.GetFilePath(), "/")
-
 		os.MkdirAll(strings.Join(myArr[:len(myArr)-1], "/"), 0777)
 	}
 }
 
+// GetFileData : Открываю или создаю файл по заданной директории.
+//
+//	Если файл создается, то добавляю в него квадратные скобки (Для читаемости json).
+//	Если файл уже не пустой, то считываю его содержимое
 func (serv *ServerStorage) GetFileData() {
 	type JSONData struct {
 		UUID  int    `json:"uuid"`
@@ -123,12 +128,10 @@ func (serv *ServerStorage) GetAddress(str string) (string, error) {
 	}
 }
 
+// Save : Открываю файл, считываю из него данные. Добавляю к данным из файла новую запись.
+//
+//	Затем очищаю файл и записываю в него новые данные
 func (serv *ServerStorage) Save(key string, value string) error {
-
-	if serv.GetFilePath() == "" {
-		return nil
-	}
-
 	type JSONData struct {
 		UUID  int    `json:"uuid"`
 		Key   string `json:"short_url"`
@@ -143,7 +146,7 @@ func (serv *ServerStorage) Save(key string, value string) error {
 
 	fromFileData, err := io.ReadAll(file)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	var jsonData []JSONData
