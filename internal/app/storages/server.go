@@ -132,6 +132,10 @@ func (serv *ServerStorage) GetAddress(str string) (string, error) {
 //
 //	Затем очищаю файл и записываю в него новые данные
 func (serv *ServerStorage) Save(key string, value string) error {
+	if serv.GetFilePath() == "" {
+		return nil
+	}
+
 	type JSONData struct {
 		UUID  int    `json:"uuid"`
 		Key   string `json:"short_url"`
