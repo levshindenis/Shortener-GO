@@ -6,6 +6,7 @@ import (
 	"github.com/levshindenis/sprint1/internal/app/tools"
 	"io"
 	"os"
+	"path"
 	"path/filepath"
 )
 
@@ -60,7 +61,8 @@ func (serv *ServerStorage) SetFilePath(value string) {
 }
 
 func (serv *ServerStorage) MakeDir() {
-	serv.SetFilePath(serv.GetFilePath()[1:])
+	baseDir, _ := os.Executable()
+	serv.SetFilePath(path.Join(baseDir, serv.GetFilePath()[1:])[1:])
 	if _, err := os.Stat(serv.GetFilePath()); err != nil {
 		os.MkdirAll(filepath.Dir(serv.GetFilePath()), os.ModePerm)
 	}
