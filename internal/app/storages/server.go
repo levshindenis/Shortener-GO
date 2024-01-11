@@ -6,7 +6,7 @@ import (
 	"github.com/levshindenis/sprint1/internal/app/tools"
 	"io"
 	"os"
-	"strings"
+	"path/filepath"
 )
 
 type ServerStorage struct {
@@ -59,21 +59,13 @@ func (serv *ServerStorage) SetFilePath(value string) {
 	serv.sa.SetFilePath(value)
 }
 
-// MakeDir : После инициализации данных к расположению папки добавляю символы, чтобы создавалось в базовом каталоге
-//
-//	И создаю директорию по указанному адресу
 func (serv *ServerStorage) MakeDir() {
-	serv.SetFilePath("../.." + serv.GetFilePath())
+	serv.SetFilePath(serv.GetFilePath()[1:])
 	if _, err := os.Stat(serv.GetFilePath()); err != nil {
-		myArr := strings.Split(serv.GetFilePath(), "/")
-		os.MkdirAll(strings.Join(myArr[:len(myArr)-1], "/"), 0777)
+		os.MkdirAll(filepath.Dir(serv.GetFilePath()), os.ModePerm)
 	}
 }
 
-// GetFileData : Открываю или создаю файл по заданной директории.
-//
-//	Если файл создается, то добавляю в него квадратные скобки (Для читаемости json).
-//	Если файл уже не пустой, то считываю его содержимое
 func (serv *ServerStorage) GetFileData() {
 	type JSONData struct {
 		UUID  int    `json:"uuid"`
@@ -81,10 +73,17 @@ func (serv *ServerStorage) GetFileData() {
 		Value string `json:"original_url"`
 	}
 
-	file, _ := os.OpenFile(serv.GetFilePath(), os.O_RDWR|os.O_CREATE, 0666)
+	file, err := os.OpenFile(serv.GetFilePath(), os.O_RDWR|os.O_CREATE, os.ModePerm)
+	if err != nil {
+		panic(err)
+	}
 	defer file.Close()
 
-	fileInfo, _ := os.Stat(serv.GetFilePath())
+	fileInfo, err := os.Stat(serv.GetFilePath())
+	if err != nil {
+		panic(err)
+	}
+
 	if fileInfo.Size() == 0 {
 		file.Write([]byte("[]"))
 		return
@@ -106,8 +105,6 @@ func (serv *ServerStorage) GetFileData() {
 	}
 }
 
-// GetAddress проверяю, есть ли такой адрес(длинный URL) в storage. Если есть, то возвращаю уже заданный короткий,
-// если нет, то создаю короткий URL, сохраняю данные и возвращаю его
 func (serv *ServerStorage) GetAddress(str string) (string, error) {
 	addr := serv.GetBaseSA() + "/"
 	if value, ok := serv.ValueInStorage(str); ok {
@@ -128,9 +125,6 @@ func (serv *ServerStorage) GetAddress(str string) (string, error) {
 	}
 }
 
-// Save : Открываю файл, считываю из него данные. Добавляю к данным из файла новую запись.
-//
-//	Затем очищаю файл и записываю в него новые данные
 func (serv *ServerStorage) Save(key string, value string) error {
 	if serv.GetFilePath() == "" {
 		return nil
@@ -142,7 +136,7 @@ func (serv *ServerStorage) Save(key string, value string) error {
 		Value string `json:"original_url"`
 	}
 
-	file, err := os.OpenFile(serv.GetFilePath(), os.O_RDWR, 0666)
+	file, err := os.OpenFile(serv.GetFilePath(), os.O_RDWR, os.ModePerm)
 	if err != nil {
 		return err
 	}

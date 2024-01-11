@@ -32,7 +32,7 @@ func (r *loggingResponseWriter) WriteHeader(statusCode int) {
 func WithLogging(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-		//Как добавить логгер, чтобы его не инициализировать постоянно?
+
 		logger, err := zap.NewDevelopment()
 		if err != nil {
 			http.Error(w, "Something bad with logger", http.StatusBadRequest)
