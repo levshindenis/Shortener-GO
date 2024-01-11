@@ -2,7 +2,6 @@ package storages
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/levshindenis/sprint1/internal/app/config"
 	"github.com/levshindenis/sprint1/internal/app/tools"
 	"io"
@@ -63,9 +62,7 @@ func (serv *ServerStorage) SetFilePath(value string) {
 
 func (serv *ServerStorage) MakeDir() {
 	baseDir, _ := os.Executable()
-	fmt.Println(baseDir)
 	myAbs, _ := filepath.Abs(".." + path.Join(baseDir, serv.GetFilePath()[1:]))
-	fmt.Println(myAbs)
 	serv.SetFilePath(myAbs)
 	if _, err := os.Stat(serv.GetFilePath()); err != nil {
 		os.MkdirAll(filepath.Dir(serv.GetFilePath()), os.ModePerm)
