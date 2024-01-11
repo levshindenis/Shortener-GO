@@ -16,7 +16,21 @@ type (
 		http.ResponseWriter
 		responseData *responseData
 	}
+
+	MyLogger struct {
+		loggerSugar zap.SugaredLogger
+	}
 )
+
+func (ml *MyLogger) Init() {
+	logger, err := zap.NewDevelopment()
+	if err != nil {
+		panic(err)
+	}
+	defer logger.Sync()
+
+	ml.loggerSugar = *logger.Sugar()
+}
 
 func (r *loggingResponseWriter) Write(b []byte) (int, error) {
 	size, err := r.ResponseWriter.Write(b)
@@ -29,18 +43,10 @@ func (r *loggingResponseWriter) WriteHeader(statusCode int) {
 	r.responseData.status = statusCode
 }
 
-func WithLogging(h http.HandlerFunc) http.HandlerFunc {
+func (ml *MyLogger) WithLogging(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
-		logger, err := zap.NewDevelopment()
-		if err != nil {
-			http.Error(w, "Something bad with logger", http.StatusBadRequest)
-			return
-		}
-		defer logger.Sync()
-
-		sugar := *logger.Sugar()
 		responseData := &responseData{
 			status: 0,
 			size:   0,
@@ -53,7 +59,7 @@ func WithLogging(h http.HandlerFunc) http.HandlerFunc {
 
 		duration := time.Since(start)
 
-		sugar.Infoln(
+		ml.loggerSugar.Infoln(
 			"uri", r.RequestURI,
 			"method", r.Method,
 			"status", responseData.status,
