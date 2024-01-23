@@ -2,11 +2,12 @@ package storages
 
 import (
 	"encoding/json"
-	"github.com/levshindenis/sprint1/internal/app/config"
-	"github.com/levshindenis/sprint1/internal/app/tools"
 	"io"
 	"os"
 	"path/filepath"
+
+	"github.com/levshindenis/sprint1/internal/app/config"
+	"github.com/levshindenis/sprint1/internal/app/tools"
 )
 
 type ServerStorage struct {
@@ -32,7 +33,7 @@ func (serv *ServerStorage) SetStorage(key string, value string) {
 }
 
 func (serv *ServerStorage) ValueInStorage(value string) (string, bool) {
-	return serv.st.ValueIn(value)
+	return serv.st.InValue(value)
 }
 
 func (serv *ServerStorage) InitStorage() {
