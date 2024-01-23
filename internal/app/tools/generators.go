@@ -5,7 +5,6 @@ import (
 	"time"
 )
 
-// GenerateShortKey генерирует короткий URL
 func GenerateShortKey() string {
 	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	const keyLength = 6
