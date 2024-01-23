@@ -60,7 +60,6 @@ func (serv *ServerStorage) SetFilePath(value string) {
 }
 
 func (serv *ServerStorage) MakeDir() {
-	serv.SetFilePath(serv.GetFilePath()[1:])
 	if _, err := os.Stat(serv.GetFilePath()); err != nil {
 		os.MkdirAll(filepath.Dir(serv.GetFilePath()), os.ModePerm)
 	}
