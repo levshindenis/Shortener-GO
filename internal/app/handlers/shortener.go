@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/levshindenis/sprint1/internal/app/storages"
 	"github.com/levshindenis/sprint1/internal/app/tools"
 	"io"
@@ -114,4 +115,11 @@ func (serv *HStorage) JSONPostHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Something bad with write address", http.StatusBadRequest)
 		return
 	}
+}
+
+func (serv *HStorage) GetPingHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "There is not true method", http.StatusBadRequest)
+	}
+	fmt.Println("I'm here!")
 }

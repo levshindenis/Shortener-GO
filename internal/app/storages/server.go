@@ -32,7 +32,7 @@ func (serv *ServerStorage) SetStorage(key string, value string) {
 	serv.GetStorage()[key] = value
 }
 
-func (serv *ServerStorage) ValueInStorage(value string) (string, bool) {
+func (serv *ServerStorage) InStorageValue(value string) (string, bool) {
 	return serv.st.InValue(value)
 }
 
@@ -107,7 +107,7 @@ func (serv *ServerStorage) GetFileData() {
 
 func (serv *ServerStorage) GetAddress(str string) (string, error) {
 	addr := serv.GetBaseSA() + "/"
-	if value, ok := serv.ValueInStorage(str); ok {
+	if value, ok := serv.InStorageValue(str); ok {
 		return addr + value, nil
 	} else {
 		shortKey := tools.GenerateShortKey()
