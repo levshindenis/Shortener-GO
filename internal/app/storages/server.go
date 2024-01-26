@@ -60,6 +60,10 @@ func (serv *ServerStorage) SetFilePath(value string) {
 	serv.sa.SetFilePath(value)
 }
 
+func (serv *ServerStorage) GetDBAddress() string {
+	return serv.sa.GetDBAddress()
+}
+
 func (serv *ServerStorage) MakeDir() {
 	if _, err := os.Stat(serv.GetFilePath()); err != nil {
 		os.MkdirAll(filepath.Dir(serv.GetFilePath()), os.ModePerm)
@@ -170,3 +174,5 @@ func (serv *ServerStorage) Save(key string, value string) error {
 
 	return nil
 }
+
+//"host=localhost user=videos password=videos dbname=videos sslmode=disable"

@@ -2,13 +2,16 @@ package handlers
 
 import (
 	"bytes"
+	"context"
+	"database/sql"
 	"encoding/json"
-	"fmt"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/levshindenis/sprint1/internal/app/storages"
 	"github.com/levshindenis/sprint1/internal/app/tools"
 	"io"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 type HStorage struct {
@@ -121,5 +124,19 @@ func (serv *HStorage) GetPingHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "There is not true method", http.StatusBadRequest)
 	}
-	fmt.Println("I'm here!")
+
+	db, err := sql.Open("pgx", serv.GetDBAddress())
+	if err != nil {
+		http.Error(w, "Something bad with open db", http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+
+	if err = db.PingContext(ctx); err != nil {
+		http.Error(w, "Something bad with ping", http.StatusInternalServerError)
+		return
+	}
 }

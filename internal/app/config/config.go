@@ -2,7 +2,6 @@ package config
 
 import (
 	"flag"
-	"fmt"
 	"os"
 )
 
@@ -68,6 +67,4 @@ func (sa *ServerConfig) ParseFlags() {
 	if envDBAddress := os.Getenv("DATABASE_DSN"); envDBAddress != "" {
 		sa.SetDBAddress(envDBAddress)
 	}
-
-	fmt.Println(sa.GetDBAddress())
 }
