@@ -40,14 +40,16 @@ func (serv *HStorage) PostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	w.WriteHeader(http.StatusCreated)
-
 	address, flag, err := serv.MakeShortURL(string(body))
 	if err != nil {
 		http.Error(w, "Something bad with MakeShortURL", http.StatusBadRequest)
 		return
 	}
-	if !flag {
+
+	if flag {
+		w.WriteHeader(http.StatusConflict)
+	} else {
+		w.WriteHeader(http.StatusCreated)
 		if err = serv.Save(address, string(body)); err != nil {
 			http.Error(w, "Something bad with Save", http.StatusBadRequest)
 			return
@@ -108,7 +110,6 @@ func (serv *HStorage) JSONPostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
 
 	var flag bool
 	enc.ShortURL, flag, err = serv.MakeShortURL(dec.LongURL)
@@ -116,8 +117,10 @@ func (serv *HStorage) JSONPostHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Something bad with MakeShortURL", http.StatusBadRequest)
 		return
 	}
-
-	if !flag {
+	if flag {
+		w.WriteHeader(http.StatusConflict)
+	} else {
+		w.WriteHeader(http.StatusCreated)
 		if err = serv.Save(enc.ShortURL, dec.LongURL); err != nil {
 			http.Error(w, "Something bad with Save", http.StatusBadRequest)
 			return
