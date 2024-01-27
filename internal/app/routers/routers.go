@@ -13,10 +13,13 @@ func MyRouter(hs handlers.HStorage) *chi.Mux {
 	r := chi.NewRouter()
 	r.Route("/", func(r chi.Router) {
 		r.Post("/", middleware.WithCompression(ml.WithLogging(hs.PostHandler)))
-		r.Get("/ping", ml.WithLogging(hs.GetPingHandler))
+		r.Get("/ping", middleware.WithCompression(ml.WithLogging(hs.GetPingHandler)))
 		r.Get("/{id}", middleware.WithCompression(ml.WithLogging(hs.GetHandler)))
 		r.Route("/api", func(r chi.Router) {
-			r.Post("/shorten", middleware.WithCompression(hs.JSONPostHandler))
+			r.Post("/shorten", middleware.WithCompression(ml.WithLogging(hs.JSONPostHandler)))
+			r.Route("/shorten", func(r chi.Router) {
+				r.Post("/batch", middleware.WithCompression(ml.WithLogging(hs.BatchPostHandler)))
+			})
 		})
 	})
 	return r

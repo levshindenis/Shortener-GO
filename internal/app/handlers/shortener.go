@@ -26,7 +26,7 @@ func (serv *HStorage) PostHandler(w http.ResponseWriter, r *http.Request) {
 	var body []byte
 	var err error
 	if r.Header.Get("Content-Type") == "application/x-gzip" {
-		body, err = tools.Compression(r.Body)
+		body, err = tools.Unpacking(r.Body)
 		if err != nil {
 			http.Error(w, "Something bad with compression", http.StatusBadRequest)
 			return
@@ -158,3 +158,72 @@ func (serv *HStorage) GetPingHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func (serv *HStorage) BatchPostHandler(w http.ResponseWriter, r *http.Request) {
+	type Decoder struct {
+		ID      string `json:"correlation_id"`
+		LongURL string `json:"original_url"`
+	}
+	type Encoder struct {
+		ID       string `json:"correlation_id"`
+		ShortURL string `json:"short_url"`
+	}
+	var enc []Encoder
+	var dec []Decoder
+	var buf bytes.Buffer
+
+	if r.Method != http.MethodPost {
+		http.Error(w, "There is not true method", http.StatusBadRequest)
+		return
+	}
+
+	if r.Header.Get("Content-Type") != "application/json" {
+		http.Error(w, "There is incorrect data format", http.StatusBadRequest)
+		return
+	}
+
+	if _, err := buf.ReadFrom(r.Body); err != nil {
+		http.Error(w, "Something bad with read body", http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+
+	if err := json.Unmarshal(buf.Bytes(), &dec); err != nil {
+		http.Error(w, "Something bad with decoding JSON", http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+
+	for _, elem := range dec {
+		short, flag, err := serv.MakeShortURL(elem.LongURL)
+		if err != nil {
+			http.Error(w, "Something bad with MakeShortURL", http.StatusBadRequest)
+			return
+		}
+
+		if !flag {
+			if err = serv.Save(short, elem.LongURL); err != nil {
+				http.Error(w, "Something bad with Save", http.StatusBadRequest)
+				return
+			}
+		}
+
+		short = serv.GetConfigParameter("baseURL") + "/" + short
+		enc = append(enc, Encoder{ID: elem.ID, ShortURL: short})
+	}
+
+	resp, err := json.Marshal(enc)
+	if err != nil {
+		http.Error(w, "Something bad with encoding JSON", http.StatusBadRequest)
+		return
+	}
+
+	if _, err = w.Write(resp); err != nil {
+		http.Error(w, "Something bad with write address", http.StatusBadRequest)
+		return
+	}
+}
+
+//[{"correlation_id":"1","original_url":"https://yandex1.ru/"},{"correlation_id":"2","original_url":"https://yandex2.ru/"}]
