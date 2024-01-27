@@ -1,11 +1,15 @@
 package storages
 
 import (
+	"context"
+	"database/sql"
 	"encoding/json"
-	"io"
+	"errors"
 	"os"
 	"path/filepath"
+	"time"
 
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/levshindenis/sprint1/internal/app/config"
 	"github.com/levshindenis/sprint1/internal/app/tools"
 )
@@ -16,163 +20,247 @@ type ServerStorage struct {
 }
 
 func (serv *ServerStorage) Init() {
-	serv.st.EmptyStorage()
 	serv.sa.ParseFlags()
-	if serv.GetFilePath() != "" {
-		serv.MakeDir()
-		serv.GetFileData()
+	if serv.GetConfigParameter("db") != "" {
+		serv.MakeDB()
+	} else if serv.GetConfigParameter("file") != "" {
+		serv.MakeFile()
+	} else {
+		serv.st.EmptyStorage()
 	}
 }
 
-func (serv *ServerStorage) GetStorage() Storage {
-	return serv.st
+func (serv *ServerStorage) MakeFile() {
+	configFile := serv.GetConfigParameter("file")
+	if _, err := os.Stat(filepath.Dir(configFile)); err != nil {
+		os.MkdirAll(filepath.Dir(configFile), os.ModePerm)
+	}
+
+	if _, err := os.Stat(configFile); err != nil {
+		file, err1 := os.OpenFile(configFile, os.O_WRONLY|os.O_CREATE, os.ModePerm)
+		if err1 != nil {
+			panic(err)
+		}
+		defer file.Close()
+
+		file.Write([]byte("[]"))
+	}
 }
 
-func (serv *ServerStorage) SetStorage(key string, value string) {
-	serv.GetStorage()[key] = value
-}
+func (serv *ServerStorage) MakeDB() {
+	db, err := sql.Open("pgx", serv.GetConfigParameter("db"))
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
 
-func (serv *ServerStorage) InStorageValue(value string) (string, bool) {
-	return serv.st.InValue(value)
+	query := `CREATE TABLE IF NOT EXISTS shortener(short_url text, long_url text)`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err = db.ExecContext(ctx, query)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (serv *ServerStorage) InitStorage() {
 	serv.st.EmptyStorage()
 }
 
-func (serv *ServerStorage) GetStartSA() string {
-	return serv.sa.GetStartAddress()
-}
-
-func (serv *ServerStorage) GetBaseSA() string {
-	return serv.sa.GetShortBaseURL()
-}
-
-func (serv *ServerStorage) SetBaseSA(value string) {
-	serv.sa.SetShortBaseURL(value)
-}
-
-func (serv *ServerStorage) GetFilePath() string {
-	return serv.sa.GetFilePath()
-}
-
-func (serv *ServerStorage) SetFilePath(value string) {
-	serv.sa.SetFilePath(value)
-}
-
-func (serv *ServerStorage) GetDBAddress() string {
-	return serv.sa.GetDBAddress()
-}
-
-func (serv *ServerStorage) MakeDir() {
-	if _, err := os.Stat(serv.GetFilePath()); err != nil {
-		os.MkdirAll(filepath.Dir(serv.GetFilePath()), os.ModePerm)
+func (serv *ServerStorage) GetConfigParameter(param string) string {
+	switch param {
+	case "address":
+		return serv.sa.GetStartAddress()
+	case "baseURL":
+		return serv.sa.GetShortBaseURL()
+	case "file":
+		return serv.sa.GetFilePath()
+	case "db":
+		return serv.sa.GetDBAddress()
+	default:
+		return ""
 	}
 }
 
-func (serv *ServerStorage) GetFileData() {
-	type JSONData struct {
-		UUID  int    `json:"uuid"`
-		Key   string `json:"short_url"`
-		Value string `json:"original_url"`
+func (serv *ServerStorage) SetConfigParameter(value string, index int) {
+	switch index {
+	case 0:
+		serv.sa.SetStartAddress(value)
+		break
+	case 1:
+		serv.sa.SetShortBaseURL(value)
+		break
+	case 2:
+		serv.sa.SetFilePath(value)
+		break
+	case 3:
+		serv.sa.SetDBAddress(value)
+		break
+	default:
+		break
 	}
+}
 
-	file, err := os.OpenFile(serv.GetFilePath(), os.O_RDWR|os.O_CREATE, os.ModePerm)
+func (serv *ServerStorage) MakeShortURL(longURL string) (string, bool, error) {
+	value, err := serv.Get(longURL, "value")
 	if err != nil {
-		panic(err)
+		return "", false, err
 	}
-	defer file.Close()
-
-	fileInfo, err := os.Stat(serv.GetFilePath())
-	if err != nil {
-		panic(err)
-	}
-
-	if fileInfo.Size() == 0 {
-		file.Write([]byte("[]"))
-		return
-	}
-
-	data, err := io.ReadAll(file)
-	if err != nil {
-		panic(err)
-	}
-
-	var jsonData []JSONData
-	err = json.Unmarshal(data, &jsonData)
-	if err != nil {
-		panic(err)
-	}
-
-	for _, elem := range jsonData {
-		serv.SetStorage(elem.Key, elem.Value)
-	}
-}
-
-func (serv *ServerStorage) GetAddress(str string) (string, error) {
-	addr := serv.GetBaseSA() + "/"
-	if value, ok := serv.InStorageValue(str); ok {
-		return addr + value, nil
+	if value != "" {
+		return value, true, nil
 	} else {
 		shortKey := tools.GenerateShortKey()
 		for {
-			if _, in := serv.GetStorage()[shortKey]; !in {
-				serv.SetStorage(shortKey, str)
-				break
+			result, err := serv.Get(shortKey, "key")
+			if err != nil {
+				return "", false, err
+			}
+			if result == "" {
+				return shortKey, false, nil
 			}
 			shortKey = tools.GenerateShortKey()
 		}
-		if err := serv.Save(shortKey, str); err != nil {
-			return "", err
-		}
-		return addr + shortKey, nil
 	}
 }
 
+//
+
+func (serv *ServerStorage) Get(value string, param string) (string, error) {
+	if serv.GetConfigParameter("db") != "" {
+		return serv.GetDBData(value, param)
+	} else if serv.GetConfigParameter("file") != "" {
+		return serv.GetFileData(value, param)
+	} else {
+		return serv.GetStorageData(value, param)
+	}
+}
+
+func (serv *ServerStorage) GetDBData(value string, param string) (string, error) {
+	db, err := sql.Open("pgx", serv.GetConfigParameter("db"))
+	if err != nil {
+		return "", err
+	}
+	defer db.Close()
+
+	query := ``
+	if param == "value" {
+		query = `SELECT short_url FROM shortener WHERE long_url = $1`
+	} else if param == "key" {
+		query = `SELECT long_url FROM shortener WHERE short_url = $1`
+	} else {
+		return "", errors.New("unknown param")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	dbAnswer := db.QueryRowContext(ctx, query, value)
+
+	var result string
+	err = dbAnswer.Scan(&result)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", nil
+		} else {
+			return "", err
+		}
+	}
+
+	return result, nil
+}
+
+func (serv *ServerStorage) GetFileData(value string, param string) (string, error) {
+	jsonData, err := tools.ReadFile(serv.GetConfigParameter("file"))
+	if err != nil {
+		return "", err
+	}
+
+	if param == "value" {
+		for _, elem := range jsonData {
+			if elem.Value == value {
+				return elem.Key, nil
+			}
+		}
+	} else if param == "key" {
+		for _, elem := range jsonData {
+			if elem.Key == value {
+				return elem.Value, nil
+			}
+		}
+	} else {
+		return "", errors.New("unknown param")
+	}
+
+	return "", nil
+}
+
+func (serv *ServerStorage) GetStorageData(value string, param string) (string, error) {
+	return serv.st.GetStorageData(value, param)
+}
+
+//
+
 func (serv *ServerStorage) Save(key string, value string) error {
-	if serv.GetFilePath() == "" {
-		return nil
+	if serv.GetConfigParameter("db") != "" {
+		if err := serv.SetDBData(key, value); err != nil {
+			return err
+		}
+	} else if serv.GetConfigParameter("file") != "" {
+		if err := serv.SetFileData(key, value); err != nil {
+			return err
+		}
+	} else {
+		serv.SetStorage(key, value)
+	}
+	return nil
+}
+
+func (serv *ServerStorage) SetFileData(key string, value string) error {
+	jsonData, err := tools.ReadFile(serv.GetConfigParameter("file"))
+	if err != nil {
+		return err
 	}
 
-	type JSONData struct {
-		UUID  int    `json:"uuid"`
-		Key   string `json:"short_url"`
-		Value string `json:"original_url"`
-	}
-
-	file, err := os.OpenFile(serv.GetFilePath(), os.O_RDWR, os.ModePerm)
+	file, err := os.OpenFile(serv.GetConfigParameter("file"), os.O_TRUNC|os.O_WRONLY, os.ModePerm)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	fromFileData, err := io.ReadAll(file)
-	if err != nil {
-		return err
-	}
-
-	var jsonData []JSONData
-	if err := json.Unmarshal(fromFileData, &jsonData); err != nil {
-		return err
-	}
-
-	jsonData = append(jsonData, JSONData{UUID: len(serv.GetStorage()), Key: key, Value: value})
-	if err := file.Truncate(0); err != nil {
-		return err
-	}
-	if _, err := file.Seek(0, 0); err != nil {
-		return err
-	}
-
+	jsonData = append(jsonData, tools.JSONData{UUID: len(jsonData) + 1, Key: key, Value: value})
 	toFileData, err := json.MarshalIndent(jsonData, "", "   ")
 	if err != nil {
 		return err
 	}
-	if _, err := file.Write(toFileData); err != nil {
+
+	if _, err = file.Write(toFileData); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (serv *ServerStorage) SetDBData(key string, value string) error {
+	db, err := sql.Open("pgx", serv.GetConfigParameter("db"))
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	query := `INSERT INTO shortener (short_url, long_url) values ($1, $2)`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err = db.ExecContext(ctx, query, key, value)
+	if err != nil {
 		return err
 	}
 
 	return nil
 }
 
-//"host=localhost user=videos password=videos dbname=videos sslmode=disable"
+func (serv *ServerStorage) SetStorage(key string, value string) {
+	serv.st.SetStorage(key, value)
+}

@@ -16,5 +16,5 @@ func run() error {
 	var server handlers.HStorage
 	server.Init()
 
-	return http.ListenAndServe(server.GetStartSA(), routers.MyRouter(server))
+	return http.ListenAndServe(server.GetConfigParameter("address"), routers.MyRouter(server))
 }
