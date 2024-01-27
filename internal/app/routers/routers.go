@@ -2,6 +2,7 @@ package routers
 
 import (
 	"github.com/go-chi/chi/v5"
+
 	"github.com/levshindenis/sprint1/internal/app/handlers"
 	"github.com/levshindenis/sprint1/internal/app/middleware"
 )

@@ -5,13 +5,15 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/levshindenis/sprint1/internal/app/storages"
-	"github.com/levshindenis/sprint1/internal/app/tools"
 	"io"
 	"net/http"
 	"net/url"
 	"time"
+
+	_ "github.com/jackc/pgx/v5/stdlib"
+
+	"github.com/levshindenis/sprint1/internal/app/storages"
+	"github.com/levshindenis/sprint1/internal/app/tools"
 )
 
 type HStorage struct {

@@ -1,9 +1,10 @@
 package main
 
 import (
+	"net/http"
+
 	"github.com/levshindenis/sprint1/internal/app/handlers"
 	"github.com/levshindenis/sprint1/internal/app/routers"
-	"net/http"
 )
 
 func main() {
