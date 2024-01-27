@@ -84,18 +84,18 @@ func (serv *ServerStorage) GetConfigParameter(param string) string {
 	}
 }
 
-func (serv *ServerStorage) SetConfigParameter(value string, index int) {
-	switch index {
-	case 0:
+func (serv *ServerStorage) SetConfigParameter(value string, param string) {
+	switch param {
+	case "address":
 		serv.sa.SetStartAddress(value)
 		break
-	case 1:
+	case "baseURL":
 		serv.sa.SetShortBaseURL(value)
 		break
-	case 2:
+	case "file":
 		serv.sa.SetFilePath(value)
 		break
-	case 3:
+	case "db":
 		serv.sa.SetDBAddress(value)
 		break
 	default:

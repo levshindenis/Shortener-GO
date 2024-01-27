@@ -124,6 +124,8 @@ func (serv *HStorage) JSONPostHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	enc.ShortURL = serv.GetConfigParameter("baseURL") + "/" + enc.ShortURL
+
 	resp, err := json.Marshal(enc)
 	if err != nil {
 		http.Error(w, "Something bad with encoding JSON", http.StatusBadRequest)
