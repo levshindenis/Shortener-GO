@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"time"
@@ -110,6 +111,7 @@ func (serv *ServerStorage) MakeShortURL(longURL string) (string, bool, error) {
 		for {
 			result, err := serv.Get(shortKey, "key")
 			if err != nil {
+				fmt.Println("2")
 				return "", false, err
 			}
 			if result == "" {

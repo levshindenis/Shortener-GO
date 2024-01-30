@@ -230,5 +230,3 @@ func (serv *HStorage) BatchPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-
-//[{"correlation_id":"1","original_url":"https://yandex1.ru/"},{"correlation_id":"2","original_url":"https://yandex2.ru/"}]

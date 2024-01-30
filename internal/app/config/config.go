@@ -52,19 +52,19 @@ func (sa *ServerConfig) ParseFlags() {
 
 	flag.Parse()
 
-	if envStartAddress := os.Getenv("SERVER_ADDRESS"); envStartAddress != "" {
+	if envStartAddress, in := os.LookupEnv("SERVER_ADDRESS"); in {
 		sa.SetStartAddress(envStartAddress)
 	}
 
-	if envShortBaseURL := os.Getenv("BASE_URL"); envShortBaseURL != "" {
+	if envShortBaseURL, in := os.LookupEnv("BASE_URL"); in {
 		sa.SetShortBaseURL(envShortBaseURL)
 	}
 
-	if envFilePath := os.Getenv("FILE_STORAGE_PATH"); envFilePath != "" {
+	if envFilePath, in := os.LookupEnv("FILE_STORAGE_PATH"); in {
 		sa.SetFilePath(envFilePath)
 	}
 
-	if envDBAddress := os.Getenv("DATABASE_DSN"); envDBAddress != "" {
+	if envDBAddress, in := os.LookupEnv("DATABASE_DSN"); in {
 		sa.SetDBAddress(envDBAddress)
 	}
 }
