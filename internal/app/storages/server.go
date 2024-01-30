@@ -55,12 +55,10 @@ func (serv *ServerStorage) MakeDB() {
 	}
 	defer db.Close()
 
-	query := `CREATE TABLE IF NOT EXISTS shortener(short_url text, long_url text)`
-
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	_, err = db.ExecContext(ctx, query)
+	_, err = db.ExecContext(ctx, `CREATE TABLE IF NOT EXISTS shortener(short_url text, long_url text)`)
 	if err != nil {
 		panic(err)
 	}
@@ -127,11 +125,11 @@ func (serv *ServerStorage) MakeShortURL(longURL string) (string, bool, error) {
 func (serv *ServerStorage) Get(value string, param string) (string, error) {
 	if serv.GetConfigParameter("db") != "" {
 		return serv.GetDBData(value, param)
-	} else if serv.GetConfigParameter("file") != "" {
-		return serv.GetFileData(value, param)
-	} else {
-		return serv.GetStorageData(value, param)
 	}
+	if serv.GetConfigParameter("file") != "" {
+		return serv.GetFileData(value, param)
+	}
+	return serv.GetStorageData(value, param)
 }
 
 func (serv *ServerStorage) GetDBData(value string, param string) (string, error) {
@@ -141,19 +139,18 @@ func (serv *ServerStorage) GetDBData(value string, param string) (string, error)
 	}
 	defer db.Close()
 
-	query := ``
-	if param == "value" {
-		query = `SELECT short_url FROM shortener WHERE long_url = $1`
-	} else if param == "key" {
-		query = `SELECT long_url FROM shortener WHERE short_url = $1`
-	} else {
-		return "", errors.New("unknown param")
-	}
-
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	dbAnswer := db.QueryRowContext(ctx, query, value)
+	var dbAnswer *sql.Row
+
+	if param == "value" {
+		dbAnswer = db.QueryRowContext(ctx, `SELECT short_url FROM shortener WHERE long_url = $1`, value)
+	} else if param == "key" {
+		dbAnswer = db.QueryRowContext(ctx, `SELECT long_url FROM shortener WHERE short_url = $1`, value)
+	} else {
+		return "", errors.New("unknown param")
+	}
 
 	var result string
 	err = dbAnswer.Scan(&result)
@@ -180,17 +177,15 @@ func (serv *ServerStorage) GetFileData(value string, param string) (string, erro
 				return elem.Key, nil
 			}
 		}
-	} else if param == "key" {
+	}
+	if param == "key" {
 		for _, elem := range jsonData {
 			if elem.Key == value {
 				return elem.Value, nil
 			}
 		}
-	} else {
-		return "", errors.New("unknown param")
 	}
-
-	return "", nil
+	return "", errors.New("unknown param")
 }
 
 func (serv *ServerStorage) GetStorageData(value string, param string) (string, error) {
@@ -204,13 +199,13 @@ func (serv *ServerStorage) Save(key string, value string) error {
 		if err := serv.SetDBData(key, value); err != nil {
 			return err
 		}
-	} else if serv.GetConfigParameter("file") != "" {
+	}
+	if serv.GetConfigParameter("file") != "" {
 		if err := serv.SetFileData(key, value); err != nil {
 			return err
 		}
-	} else {
-		serv.SetStorage(key, value)
 	}
+	serv.SetStorage(key, value)
 	return nil
 }
 
@@ -245,12 +240,10 @@ func (serv *ServerStorage) SetDBData(key string, value string) error {
 	}
 	defer db.Close()
 
-	query := `INSERT INTO shortener (short_url, long_url) values ($1, $2)`
-
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	_, err = db.ExecContext(ctx, query, key, value)
+	_, err = db.ExecContext(ctx, `INSERT INTO shortener (short_url, long_url) values ($1, $2)`, key, value)
 	if err != nil {
 		return err
 	}
