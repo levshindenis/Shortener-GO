@@ -19,3 +19,5 @@ func run() error {
 
 	return http.ListenAndServe(server.GetConfigParameter("address"), routers.MyRouter(server))
 }
+
+//new
