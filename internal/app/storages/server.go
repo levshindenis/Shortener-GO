@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 	"time"
@@ -111,7 +110,6 @@ func (serv *ServerStorage) MakeShortURL(longURL string) (string, bool, error) {
 		for {
 			result, err := serv.Get(shortKey, "key")
 			if err != nil {
-				fmt.Println("2")
 				return "", false, err
 			}
 			if result == "" {
@@ -179,15 +177,16 @@ func (serv *ServerStorage) GetFileData(value string, param string) (string, erro
 				return elem.Key, nil
 			}
 		}
-	}
-	if param == "key" {
+	} else if param == "key" {
 		for _, elem := range jsonData {
 			if elem.Key == value {
 				return elem.Value, nil
 			}
 		}
+	} else {
+		return "", errors.New("unknown param")
 	}
-	return "", errors.New("unknown param")
+	return "", nil
 }
 
 func (serv *ServerStorage) GetStorageData(value string, param string) (string, error) {
@@ -201,13 +200,13 @@ func (serv *ServerStorage) Save(key string, value string) error {
 		if err := serv.SetDBData(key, value); err != nil {
 			return err
 		}
-	}
-	if serv.GetConfigParameter("file") != "" {
+	} else if serv.GetConfigParameter("file") != "" {
 		if err := serv.SetFileData(key, value); err != nil {
 			return err
 		}
+	} else {
+		serv.SetStorage(key, value)
 	}
-	serv.SetStorage(key, value)
 	return nil
 }
 
