@@ -2,6 +2,7 @@ package routers
 
 import (
 	"github.com/go-chi/chi/v5"
+
 	"github.com/levshindenis/sprint1/internal/app/handlers"
 	"github.com/levshindenis/sprint1/internal/app/middleware"
 )
@@ -13,9 +14,11 @@ func MyRouter(hs handlers.HStorage) *chi.Mux {
 	r := chi.NewRouter()
 	r.Route("/", func(r chi.Router) {
 		r.Post("/", middleware.WithCompression(ml.WithLogging(hs.PostHandler)))
+		r.Get("/ping", middleware.WithCompression(ml.WithLogging(hs.GetPingHandler)))
 		r.Get("/{id}", middleware.WithCompression(ml.WithLogging(hs.GetHandler)))
 		r.Route("/api", func(r chi.Router) {
-			r.Post("/shorten", middleware.WithCompression(hs.JSONPostHandler))
+			r.Post("/shorten", middleware.WithCompression(ml.WithLogging(hs.JSONPostHandler)))
+			r.Post("/shorten/batch", middleware.WithCompression(ml.WithLogging(hs.BatchPostHandler)))
 		})
 	})
 	return r

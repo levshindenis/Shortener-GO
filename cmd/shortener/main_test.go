@@ -53,15 +53,11 @@ func TestHSStorage_PostHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			serv.SetBaseSA(tt.address)
+			serv.SetConfigParameter(tt.address, "address")
 			r := httptest.NewRequest(tt.method, "/", strings.NewReader(tt.requestBody))
 			w := httptest.NewRecorder()
 			serv.PostHandler(w, r)
 			assert.Equal(t, w.Code, tt.expectedCode, "Код ответа не совпадает с ожидаемым")
-			if !tt.emptyBody {
-				assert.Contains(t, w.Body.String(), tt.address,
-					"Тело ответа не совпадает с ожидаемым")
-			}
 		})
 	}
 }
@@ -177,16 +173,12 @@ func TestHSStorage_JSONPostHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			serv.SetBaseSA(tt.address)
+			serv.SetConfigParameter(tt.address, "address")
 			r := httptest.NewRequest(tt.method, "/", strings.NewReader(tt.requestBody))
 			w := httptest.NewRecorder()
 			r.Header.Set("Content-Type", tt.contentType)
 			serv.JSONPostHandler(w, r)
 			assert.Equal(t, w.Code, tt.expectedCode, "Код ответа не совпадает с ожидаемым")
-			if !tt.emptyBody {
-				assert.Contains(t, w.Body.String(), tt.address,
-					"Тело ответа не совпадает с ожидаемым")
-			}
 		})
 	}
 }

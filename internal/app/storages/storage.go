@@ -1,16 +1,28 @@
 package storages
 
+import "errors"
+
 type Storage map[string]string
 
 func (storage *Storage) EmptyStorage() {
 	*storage = make(map[string]string)
 }
 
-func (storage *Storage) InValue(str string) (string, bool) {
-	for key, value := range *storage {
-		if value == str {
-			return key, true
-		}
+func (storage *Storage) GetStorageData(value string, param string) (string, error) {
+	if param == "key" {
+		return (*storage)[value], nil
 	}
-	return "", false
+	if param == "value" {
+		for k, v := range *storage {
+			if v == value {
+				return k, nil
+			}
+		}
+		return "", nil
+	}
+	return "", errors.New("unknown param")
+}
+
+func (storage *Storage) SetStorage(key string, value string) {
+	(*storage)[key] = value
 }

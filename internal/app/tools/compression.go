@@ -5,7 +5,7 @@ import (
 	"io"
 )
 
-func Compression(rbody io.ReadCloser) ([]byte, error) {
+func Unpacking(rbody io.ReadCloser) ([]byte, error) {
 	gz, err := gzip.NewReader(rbody)
 	if err != nil {
 		return nil, err

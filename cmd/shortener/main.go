@@ -1,9 +1,10 @@
 package main
 
 import (
+	"net/http"
+
 	"github.com/levshindenis/sprint1/internal/app/handlers"
 	"github.com/levshindenis/sprint1/internal/app/routers"
-	"net/http"
 )
 
 func main() {
@@ -16,5 +17,5 @@ func run() error {
 	var server handlers.HStorage
 	server.Init()
 
-	return http.ListenAndServe(server.GetStartSA(), routers.MyRouter(server))
+	return http.ListenAndServe(server.GetConfigParameter("address"), routers.MyRouter(server))
 }
