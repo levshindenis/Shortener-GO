@@ -5,7 +5,6 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -25,10 +24,6 @@ func (serv *HStorage) PostHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "There is not true method", http.StatusBadRequest)
 		return
-	}
-
-	for cookie := range r.Cookies() {
-		fmt.Println("Cookie: ", cookie)
 	}
 
 	var body []byte
@@ -99,10 +94,6 @@ func (serv *HStorage) JSONPostHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "There is not true method", http.StatusBadRequest)
 		return
-	}
-
-	for cookie := range r.Cookies() {
-		fmt.Println("Cookie: ", cookie)
 	}
 
 	if r.Header.Get("Content-Type") != "application/json" {
@@ -187,10 +178,6 @@ func (serv *HStorage) BatchPostHandler(w http.ResponseWriter, r *http.Request) {
 	var dec []Decoder
 	var buf bytes.Buffer
 
-	for cookie := range r.Cookies() {
-		fmt.Println("Cookie: ", cookie)
-	}
-
 	if r.Method != http.MethodPost {
 		http.Error(w, "There is not true method", http.StatusBadRequest)
 		return
@@ -246,7 +233,37 @@ func (serv *HStorage) BatchPostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (serv *HStorage) GetURLS(w http.ResponseWriter, r *http.Request) {
+	type JSONstr struct {
+		Key   string `json:"short_url"`
+		Value string `json:"original_url"`
+	}
 
-	fmt.Println("Hello!")
+	if r.Method != http.MethodGet {
+		http.Error(w, "There is not true method", http.StatusBadRequest)
+		return
+	}
 
+	var jo []JSONstr
+	rf, err := tools.ReadFile(serv.GetConfigParameter("file"))
+	if err != nil {
+		http.Error(w, "Something bad with read file", http.StatusBadRequest)
+		return
+	}
+
+	for _, elem := range rf {
+		jo = append(jo, JSONstr{Key: elem.Key, Value: elem.Value})
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	resp, err := json.Marshal(jo)
+	if err != nil {
+		http.Error(w, "Something bad with encoding JSON", http.StatusBadRequest)
+		return
+	}
+
+	if _, err = w.Write(resp); err != nil {
+		http.Error(w, "Something bad with write address", http.StatusBadRequest)
+		return
+	}
 }

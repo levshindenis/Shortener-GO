@@ -19,8 +19,7 @@ func MyRouter(hs handlers.HStorage) *chi.Mux {
 		r.Route("/api", func(r chi.Router) {
 			r.Post("/shorten", middleware.WithCompression(ml.WithLogging(hs.JSONPostHandler)))
 			r.Post("/shorten/batch", middleware.WithCompression(ml.WithLogging(hs.BatchPostHandler)))
-			r.Get("/user/urls", hs.GetURLS)
-
+			r.Get("/user/urls", middleware.WithCompression(ml.WithLogging(hs.GetURLS)))
 		})
 	})
 	return r
