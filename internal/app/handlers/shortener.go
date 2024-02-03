@@ -5,7 +5,6 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -28,9 +27,8 @@ func (serv *HStorage) PostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var cookVal string
 	cookie, err := r.Cookie("UserID")
-	if err != nil {
+	if err != nil || !serv.InCookies(cookie.Value) {
 		gen, err1 := tools.GenerateCookie(serv.CountCookies() + 1)
 		if err1 != nil {
 			http.Error(w, "Something bad with cookies", http.StatusBadRequest)
@@ -41,15 +39,10 @@ func (serv *HStorage) PostHandler(w http.ResponseWriter, r *http.Request) {
 			Value: gen,
 		})
 		serv.SetCookie(gen)
-		cookVal = gen
-		fmt.Println(gen)
-	} else {
-		if !serv.InCookies(cookie.Value) {
-			http.Error(w, "Failed UserID", http.StatusUnauthorized)
-			return
-		}
-		cookVal = cookie.Value
+		http.Error(w, "Failed UserID", http.StatusUnauthorized)
+		return
 	}
+	cookVal := cookie.Value
 
 	var body []byte
 	if r.Header.Get("Content-Type") == "application/x-gzip" {
@@ -121,9 +114,8 @@ func (serv *HStorage) JSONPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var cookVal string
 	cookie, err := r.Cookie("UserID")
-	if err != nil {
+	if err != nil || !serv.InCookies(cookie.Value) {
 		gen, err1 := tools.GenerateCookie(serv.CountCookies() + 1)
 		if err1 != nil {
 			http.Error(w, "Something bad with cookies", http.StatusBadRequest)
@@ -134,15 +126,10 @@ func (serv *HStorage) JSONPostHandler(w http.ResponseWriter, r *http.Request) {
 			Value: gen,
 		})
 		serv.SetCookie(gen)
-		cookVal = gen
-		fmt.Println(gen)
-	} else {
-		if !serv.InCookies(cookie.Value) {
-			http.Error(w, "Failed UserID", http.StatusUnauthorized)
-			return
-		}
-		cookVal = cookie.Value
+		http.Error(w, "Failed UserID", http.StatusUnauthorized)
+		return
 	}
+	cookVal := cookie.Value
 
 	if r.Header.Get("Content-Type") != "application/json" {
 		http.Error(w, "There is incorrect data format", http.StatusBadRequest)
@@ -231,9 +218,8 @@ func (serv *HStorage) BatchPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var cookVal string
 	cookie, err := r.Cookie("UserID")
-	if err != nil {
+	if err != nil || !serv.InCookies(cookie.Value) {
 		gen, err1 := tools.GenerateCookie(serv.CountCookies() + 1)
 		if err1 != nil {
 			http.Error(w, "Something bad with cookies", http.StatusBadRequest)
@@ -244,15 +230,10 @@ func (serv *HStorage) BatchPostHandler(w http.ResponseWriter, r *http.Request) {
 			Value: gen,
 		})
 		serv.SetCookie(gen)
-		cookVal = gen
-		fmt.Println(gen)
-	} else {
-		if !serv.InCookies(cookie.Value) {
-			http.Error(w, "Failed UserID", http.StatusUnauthorized)
-			return
-		}
-		cookVal = cookie.Value
+		http.Error(w, "Failed UserID", http.StatusUnauthorized)
+		return
 	}
+	cookVal := cookie.Value
 
 	if r.Header.Get("Content-Type") != "application/json" {
 		http.Error(w, "There is incorrect data format", http.StatusBadRequest)
@@ -315,7 +296,7 @@ func (serv *HStorage) GetURLS(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cookie, err := r.Cookie("UserID")
-	if err != nil {
+	if err != nil || !serv.InCookies(cookie.Value) {
 		gen, err1 := tools.GenerateCookie(serv.CountCookies() + 1)
 		if err1 != nil {
 			http.Error(w, "Something bad with cookies", http.StatusBadRequest)
