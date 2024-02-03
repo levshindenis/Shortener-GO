@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -25,6 +26,9 @@ func (serv *HStorage) PostHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "There is not true method", http.StatusBadRequest)
 		return
 	}
+
+	fmt.Println("Cookies: ", r.Cookies())
+
 	var body []byte
 	var err error
 	if r.Header.Get("Content-Type") == "application/x-gzip" {
@@ -70,6 +74,8 @@ func (serv *HStorage) GetHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "There is not true method", http.StatusBadRequest)
 	}
 
+	fmt.Println("Cookies: ", r.Cookies())
+
 	if result, err := serv.Get(r.URL.Path[1:], "key"); err == nil && result != "" {
 		w.Header().Add("Location", result)
 		w.WriteHeader(http.StatusTemporaryRedirect)
@@ -94,6 +100,8 @@ func (serv *HStorage) JSONPostHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "There is not true method", http.StatusBadRequest)
 		return
 	}
+
+	fmt.Println("Cookies: ", r.Cookies())
 
 	if r.Header.Get("Content-Type") != "application/json" {
 		http.Error(w, "There is incorrect data format", http.StatusBadRequest)
@@ -148,6 +156,8 @@ func (serv *HStorage) GetPingHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "There is not true method", http.StatusBadRequest)
 	}
 
+	fmt.Println("Cookies: ", r.Cookies())
+
 	db, err := sql.Open("pgx", serv.GetConfigParameter("db"))
 	if err != nil {
 		http.Error(w, "Something bad with open db", http.StatusInternalServerError)
@@ -181,6 +191,8 @@ func (serv *HStorage) BatchPostHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "There is not true method", http.StatusBadRequest)
 		return
 	}
+
+	fmt.Println("Cookies: ", r.Cookies())
 
 	if r.Header.Get("Content-Type") != "application/json" {
 		http.Error(w, "There is incorrect data format", http.StatusBadRequest)
@@ -229,4 +241,10 @@ func (serv *HStorage) BatchPostHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Something bad with write address", http.StatusBadRequest)
 		return
 	}
+}
+
+func (serv *HStorage) GetURLS(w http.ResponseWriter, r *http.Request) {
+
+	fmt.Println("Cookies: ", r.Cookies())
+
 }
