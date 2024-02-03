@@ -15,7 +15,6 @@ func TestHSStorage_PostHandler(t *testing.T) {
 	var serv struct {
 		handlers.HStorage
 	}
-	serv.InitStorage()
 
 	tests := []struct {
 		name         string
@@ -66,8 +65,7 @@ func TestHSStorage_GetHandler(t *testing.T) {
 	var serv struct {
 		handlers.HStorage
 	}
-	serv.InitStorage()
-	serv.SetStorage("GyuRe0", "https://yandex.ru/")
+	serv.SetStorage("GyuRe0", "https://yandex.ru/", "")
 
 	tests := []struct {
 		name         string
@@ -122,7 +120,6 @@ func TestHSStorage_JSONPostHandler(t *testing.T) {
 	var serv struct {
 		handlers.HStorage
 	}
-	serv.InitStorage()
 
 	tests := []struct {
 		name         string
