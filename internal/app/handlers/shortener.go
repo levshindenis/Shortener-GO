@@ -27,7 +27,9 @@ func (serv *HStorage) PostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("Cookies: ", r.Cookies())
+	for cookie := range r.Cookies() {
+		fmt.Println("Cookie: ", cookie)
+	}
 
 	var body []byte
 	var err error
@@ -74,8 +76,6 @@ func (serv *HStorage) GetHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "There is not true method", http.StatusBadRequest)
 	}
 
-	fmt.Println("Cookies: ", r.Cookies())
-
 	if result, err := serv.Get(r.URL.Path[1:], "key"); err == nil && result != "" {
 		w.Header().Add("Location", result)
 		w.WriteHeader(http.StatusTemporaryRedirect)
@@ -101,7 +101,9 @@ func (serv *HStorage) JSONPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("Cookies: ", r.Cookies())
+	for cookie := range r.Cookies() {
+		fmt.Println("Cookie: ", cookie)
+	}
 
 	if r.Header.Get("Content-Type") != "application/json" {
 		http.Error(w, "There is incorrect data format", http.StatusBadRequest)
@@ -156,8 +158,6 @@ func (serv *HStorage) GetPingHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "There is not true method", http.StatusBadRequest)
 	}
 
-	fmt.Println("Cookies: ", r.Cookies())
-
 	db, err := sql.Open("pgx", serv.GetConfigParameter("db"))
 	if err != nil {
 		http.Error(w, "Something bad with open db", http.StatusInternalServerError)
@@ -187,12 +187,14 @@ func (serv *HStorage) BatchPostHandler(w http.ResponseWriter, r *http.Request) {
 	var dec []Decoder
 	var buf bytes.Buffer
 
+	for cookie := range r.Cookies() {
+		fmt.Println("Cookie: ", cookie)
+	}
+
 	if r.Method != http.MethodPost {
 		http.Error(w, "There is not true method", http.StatusBadRequest)
 		return
 	}
-
-	fmt.Println("Cookies: ", r.Cookies())
 
 	if r.Header.Get("Content-Type") != "application/json" {
 		http.Error(w, "There is incorrect data format", http.StatusBadRequest)
@@ -245,6 +247,6 @@ func (serv *HStorage) BatchPostHandler(w http.ResponseWriter, r *http.Request) {
 
 func (serv *HStorage) GetURLS(w http.ResponseWriter, r *http.Request) {
 
-	fmt.Println("Cookies: ", r.Cookies())
+	fmt.Println("Hello!")
 
 }
