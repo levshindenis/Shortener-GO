@@ -251,7 +251,7 @@ func (serv *HStorage) GetURLS(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, elem := range rf {
-		jo = append(jo, JSONstr{Key: elem.Key, Value: elem.Value})
+		jo = append(jo, JSONstr{Key: serv.GetConfigParameter("baseURL") + "/" + elem.Key, Value: elem.Value})
 	}
 
 	w.Header().Set("Content-Type", "application/json")
