@@ -338,6 +338,10 @@ func (serv *HStorage) GetURLS(w http.ResponseWriter, r *http.Request) {
 	}
 
 	mystr, err := serv.Get("", "all", cookVal)
+	if err != nil {
+		http.Error(w, "Something bad with GetAllURLS", http.StatusBadRequest)
+		return
+	}
 	if mystr == "" {
 		http.Error(w, "No data", http.StatusNoContent)
 		return
@@ -346,7 +350,7 @@ func (serv *HStorage) GetURLS(w http.ResponseWriter, r *http.Request) {
 	myarr := strings.Split(mystr, "*")
 	var jo []JSONstr
 	for i := 0; i < len(myarr); i += 2 {
-		jo = append(jo, JSONstr{Key: myarr[i], Value: myarr[i+1]})
+		jo = append(jo, JSONstr{Key: serv.GetConfigParameter("baseURL") + "/" + myarr[i], Value: myarr[i+1]})
 	}
 
 	w.Header().Set("Content-Type", "application/json")
