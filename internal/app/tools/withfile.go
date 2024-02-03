@@ -7,9 +7,10 @@ import (
 )
 
 type JSONData struct {
-	UUID  int    `json:"uuid"`
-	Key   string `json:"short_url"`
-	Value string `json:"original_url"`
+	UUID   int    `json:"uuid"`
+	Key    string `json:"short_url"`
+	Value  string `json:"original_url"`
+	UserID string `json:"user_id"`
 }
 
 func ReadFile(filepath string) ([]JSONData, error) {

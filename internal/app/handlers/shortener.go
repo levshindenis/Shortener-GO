@@ -5,9 +5,11 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -26,8 +28,30 @@ func (serv *HStorage) PostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var cookVal string
+	cookie, err := r.Cookie("UserID")
+	if err != nil {
+		gen, err1 := tools.GenerateCookie(serv.CountCookies() + 1)
+		if err1 != nil {
+			http.Error(w, "Something bad with cookies", http.StatusBadRequest)
+			return
+		}
+		http.SetCookie(w, &http.Cookie{
+			Name:  "UserID",
+			Value: gen,
+		})
+		serv.SetCookie(gen)
+		cookVal = gen
+		fmt.Println(gen)
+	} else {
+		if !serv.InCookies(cookie.Value) {
+			http.Error(w, "Failed UserID", http.StatusUnauthorized)
+			return
+		}
+		cookVal = cookie.Value
+	}
+
 	var body []byte
-	var err error
 	if r.Header.Get("Content-Type") == "application/x-gzip" {
 		body, err = tools.Unpacking(r.Body)
 		if err != nil {
@@ -53,7 +77,7 @@ func (serv *HStorage) PostHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusConflict)
 	} else {
 		w.WriteHeader(http.StatusCreated)
-		if err = serv.Save(address, string(body)); err != nil {
+		if err = serv.Save(address, string(body), cookVal); err != nil {
 			http.Error(w, "Something bad with Save", http.StatusBadRequest)
 			return
 		}
@@ -71,11 +95,12 @@ func (serv *HStorage) GetHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "There is not true method", http.StatusBadRequest)
 	}
 
-	if result, err := serv.Get(r.URL.Path[1:], "key"); err == nil && result != "" {
+	if result, err := serv.Get(r.URL.Path[1:], "key", ""); err == nil && result != "" {
 		w.Header().Add("Location", result)
 		w.WriteHeader(http.StatusTemporaryRedirect)
 	} else {
 		http.Error(w, "There is no such shortUrl", http.StatusBadRequest)
+		return
 	}
 }
 
@@ -94,6 +119,29 @@ func (serv *HStorage) JSONPostHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "There is not true method", http.StatusBadRequest)
 		return
+	}
+
+	var cookVal string
+	cookie, err := r.Cookie("UserID")
+	if err != nil {
+		gen, err1 := tools.GenerateCookie(serv.CountCookies() + 1)
+		if err1 != nil {
+			http.Error(w, "Something bad with cookies", http.StatusBadRequest)
+			return
+		}
+		http.SetCookie(w, &http.Cookie{
+			Name:  "UserID",
+			Value: gen,
+		})
+		serv.SetCookie(gen)
+		cookVal = gen
+		fmt.Println(gen)
+	} else {
+		if !serv.InCookies(cookie.Value) {
+			http.Error(w, "Failed UserID", http.StatusUnauthorized)
+			return
+		}
+		cookVal = cookie.Value
 	}
 
 	if r.Header.Get("Content-Type") != "application/json" {
@@ -124,7 +172,7 @@ func (serv *HStorage) JSONPostHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusConflict)
 	} else {
 		w.WriteHeader(http.StatusCreated)
-		if err = serv.Save(enc.ShortURL, dec.LongURL); err != nil {
+		if err = serv.Save(enc.ShortURL, dec.LongURL, cookVal); err != nil {
 			http.Error(w, "Something bad with Save", http.StatusBadRequest)
 			return
 		}
@@ -183,6 +231,29 @@ func (serv *HStorage) BatchPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var cookVal string
+	cookie, err := r.Cookie("UserID")
+	if err != nil {
+		gen, err1 := tools.GenerateCookie(serv.CountCookies() + 1)
+		if err1 != nil {
+			http.Error(w, "Something bad with cookies", http.StatusBadRequest)
+			return
+		}
+		http.SetCookie(w, &http.Cookie{
+			Name:  "UserID",
+			Value: gen,
+		})
+		serv.SetCookie(gen)
+		cookVal = gen
+		fmt.Println(gen)
+	} else {
+		if !serv.InCookies(cookie.Value) {
+			http.Error(w, "Failed UserID", http.StatusUnauthorized)
+			return
+		}
+		cookVal = cookie.Value
+	}
+
 	if r.Header.Get("Content-Type") != "application/json" {
 		http.Error(w, "There is incorrect data format", http.StatusBadRequest)
 		return
@@ -210,7 +281,7 @@ func (serv *HStorage) BatchPostHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if !flag {
-			if err = serv.Save(short, elem.LongURL); err != nil {
+			if err = serv.Save(short, elem.LongURL, cookVal); err != nil {
 				http.Error(w, "Something bad with Save", http.StatusBadRequest)
 				return
 			}
@@ -243,15 +314,39 @@ func (serv *HStorage) GetURLS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var jo []JSONstr
-	rf, err := tools.ReadFile(serv.GetConfigParameter("file"))
+	var cookVal string
+	cookie, err := r.Cookie("UserID")
 	if err != nil {
-		http.Error(w, "Something bad with read file", http.StatusBadRequest)
+		gen, err1 := tools.GenerateCookie(serv.CountCookies() + 1)
+		if err1 != nil {
+			http.Error(w, "Something bad with cookies", http.StatusBadRequest)
+			return
+		}
+		http.SetCookie(w, &http.Cookie{
+			Name:  "UserID",
+			Value: gen,
+		})
+		serv.SetCookie(gen)
+		cookVal = gen
+		fmt.Println(gen)
+	} else {
+		if !serv.InCookies(cookie.Value) {
+			http.Error(w, "Failed UserID", http.StatusUnauthorized)
+			return
+		}
+		cookVal = cookie.Value
+	}
+
+	mystr, err := serv.Get("", "all", cookVal)
+	if mystr == "" {
+		http.Error(w, "No data", http.StatusNoContent)
 		return
 	}
 
-	for _, elem := range rf {
-		jo = append(jo, JSONstr{Key: serv.GetConfigParameter("baseURL") + "/" + elem.Key, Value: elem.Value})
+	myarr := strings.Split(mystr, "*")
+	var jo []JSONstr
+	for i := 0; i < len(myarr); i += 2 {
+		jo = append(jo, JSONstr{Key: myarr[i], Value: myarr[i+1]})
 	}
 
 	w.Header().Set("Content-Type", "application/json")
