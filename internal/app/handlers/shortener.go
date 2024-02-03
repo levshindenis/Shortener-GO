@@ -314,7 +314,6 @@ func (serv *HStorage) GetURLS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var cookVal string
 	cookie, err := r.Cookie("UserID")
 	if err != nil {
 		gen, err1 := tools.GenerateCookie(serv.CountCookies() + 1)
@@ -327,15 +326,10 @@ func (serv *HStorage) GetURLS(w http.ResponseWriter, r *http.Request) {
 			Value: gen,
 		})
 		serv.SetCookie(gen)
-		cookVal = gen
-		fmt.Println(gen)
-	} else {
-		if !serv.InCookies(cookie.Value) {
-			http.Error(w, "Failed UserID", http.StatusUnauthorized)
-			return
-		}
-		cookVal = cookie.Value
+		http.Error(w, "Failed UserID", http.StatusUnauthorized)
+		return
 	}
+	cookVal := cookie.Value
 
 	mystr, err := serv.Get("", "all", cookVal)
 	if err != nil {
