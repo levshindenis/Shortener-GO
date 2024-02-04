@@ -5,7 +5,6 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -28,27 +27,16 @@ func (serv *HStorage) PostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var cookVal string
-	cookie, err := r.Cookie("UserID")
+	cookVal, cookFlag, err := serv.CheckCookie(r)
 	if err != nil {
-		gen, err1 := tools.GenerateCookie(serv.CountCookies() + 1)
-		if err1 != nil {
-			http.Error(w, "Something bad with cookies", http.StatusBadRequest)
-			return
-		}
+		http.Error(w, "Something bad with check cookie", http.StatusBadRequest)
+		return
+	}
+	if !cookFlag {
 		http.SetCookie(w, &http.Cookie{
 			Name:  "UserID",
-			Value: gen,
+			Value: cookVal,
 		})
-		serv.SetCookie(gen)
-		cookVal = gen
-		fmt.Println(gen)
-	} else {
-		if !serv.InCookies(cookie.Value) {
-			http.Error(w, "Failed UserID", http.StatusUnauthorized)
-			return
-		}
-		cookVal = cookie.Value
 	}
 
 	var body []byte
@@ -114,34 +102,22 @@ func (serv *HStorage) JSONPostHandler(w http.ResponseWriter, r *http.Request) {
 	var enc Encoder
 	var dec Decoder
 	var buf bytes.Buffer
-	var err error
 
 	if r.Method != http.MethodPost {
 		http.Error(w, "There is not true method", http.StatusBadRequest)
 		return
 	}
 
-	var cookVal string
-	cookie, err := r.Cookie("UserID")
+	cookVal, cookFlag, err := serv.CheckCookie(r)
 	if err != nil {
-		gen, err1 := tools.GenerateCookie(serv.CountCookies() + 1)
-		if err1 != nil {
-			http.Error(w, "Something bad with cookies", http.StatusBadRequest)
-			return
-		}
+		http.Error(w, "Something bad with check cookie", http.StatusBadRequest)
+		return
+	}
+	if !cookFlag {
 		http.SetCookie(w, &http.Cookie{
 			Name:  "UserID",
-			Value: gen,
+			Value: cookVal,
 		})
-		serv.SetCookie(gen)
-		cookVal = gen
-		fmt.Println(gen)
-	} else {
-		if !serv.InCookies(cookie.Value) {
-			http.Error(w, "Failed UserID", http.StatusUnauthorized)
-			return
-		}
-		cookVal = cookie.Value
 	}
 
 	if r.Header.Get("Content-Type") != "application/json" {
@@ -231,27 +207,16 @@ func (serv *HStorage) BatchPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var cookVal string
-	cookie, err := r.Cookie("UserID")
+	cookVal, cookFlag, err := serv.CheckCookie(r)
 	if err != nil {
-		gen, err1 := tools.GenerateCookie(serv.CountCookies() + 1)
-		if err1 != nil {
-			http.Error(w, "Something bad with cookies", http.StatusBadRequest)
-			return
-		}
+		http.Error(w, "Something bad with check cookie", http.StatusBadRequest)
+		return
+	}
+	if !cookFlag {
 		http.SetCookie(w, &http.Cookie{
 			Name:  "UserID",
-			Value: gen,
+			Value: cookVal,
 		})
-		serv.SetCookie(gen)
-		cookVal = gen
-		fmt.Println(gen)
-	} else {
-		if !serv.InCookies(cookie.Value) {
-			http.Error(w, "Failed UserID", http.StatusUnauthorized)
-			return
-		}
-		cookVal = cookie.Value
 	}
 
 	if r.Header.Get("Content-Type") != "application/json" {
@@ -314,22 +279,21 @@ func (serv *HStorage) GetURLS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cookie, err := r.Cookie("UserID")
-	if err != nil || !serv.InCookies(cookie.Value) {
-		gen, err1 := tools.GenerateCookie(serv.CountCookies() + 1)
-		if err1 != nil {
-			http.Error(w, "Something bad with cookies", http.StatusBadRequest)
-			return
-		}
+	cookVal, cookFlag, err := serv.CheckCookie(r)
+	if err != nil {
+		http.Error(w, "Something bad with check cookie", http.StatusBadRequest)
+		return
+	}
+	if !cookFlag {
 		http.SetCookie(w, &http.Cookie{
 			Name:  "UserID",
-			Value: gen,
+			Value: cookVal,
 		})
-		serv.SetCookie(gen)
+	}
+	if cookVal == "" {
 		http.Error(w, "Failed UserID", http.StatusUnauthorized)
 		return
 	}
-	cookVal := cookie.Value
 
 	mystr, err := serv.Get("", "all", cookVal)
 	if err != nil {

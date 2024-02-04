@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"net/http"
 	"os"
 	"path/filepath"
 	"time"
@@ -116,7 +117,7 @@ func (serv *ServerStorage) MakeShortURL(longURL string) (string, bool, error) {
 	}
 }
 
-//
+// get
 
 func (serv *ServerStorage) Get(value string, param string, userid string) (string, error) {
 	if serv.GetConfigParameter("db") != "" {
@@ -256,7 +257,7 @@ func (serv *ServerStorage) GetStorageData(value string, param string, userid str
 	return "", nil
 }
 
-//
+// set
 
 func (serv *ServerStorage) Save(key string, value string, userid string) error {
 	if serv.GetConfigParameter("db") != "" {
@@ -320,7 +321,7 @@ func (serv *ServerStorage) SetStorage(key string, value string, userid string) {
 	serv.st = append(serv.st, Storage{key: key, value: value, userid: userid})
 }
 
-//
+// cookie
 
 func (serv *ServerStorage) CountCookies() int {
 	return len(serv.co)
@@ -337,4 +338,20 @@ func (serv *ServerStorage) InCookies(value string) bool {
 		}
 	}
 	return false
+}
+
+func (serv *ServerStorage) CheckCookie(r *http.Request) (string, bool, error) {
+	cookie, err := r.Cookie("UserID")
+	if err != nil || !serv.InCookies(cookie.Value) {
+		gen, err1 := tools.GenerateCookie(serv.CountCookies() + 1)
+		if err1 != nil {
+			return "", false, err
+		}
+		serv.SetCookie(gen)
+		if r.Method == http.MethodGet {
+			return "", false, nil
+		}
+		return gen, false, nil
+	}
+	return cookie.Value, true, nil
 }
