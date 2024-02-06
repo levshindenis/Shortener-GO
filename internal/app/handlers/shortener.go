@@ -328,7 +328,7 @@ func (serv *HStorage) GetURLS(w http.ResponseWriter, r *http.Request) {
 
 func (serv *HStorage) DelURLS(w http.ResponseWriter, r *http.Request) {
 	type Decoder struct {
-		LongURL string `json:"url"`
+		LongURL string
 	}
 
 	if r.Method != http.MethodDelete {
