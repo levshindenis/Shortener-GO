@@ -350,6 +350,8 @@ func (serv *HStorage) DelURLS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println(dec.LongURL)
+	fmt.Println("URLS:", dec.LongURL)
+
+	w.WriteHeader(http.StatusAccepted)
 
 }
