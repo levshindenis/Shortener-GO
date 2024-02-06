@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -81,6 +82,22 @@ func (serv *HStorage) PostHandler(w http.ResponseWriter, r *http.Request) {
 func (serv *HStorage) GetHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "There is not true method", http.StatusBadRequest)
+	}
+
+	cookVal, cookFlag, err := serv.CheckCookie(r)
+	if err != nil {
+		http.Error(w, "Something bad with check cookie", http.StatusBadRequest)
+		return
+	}
+	if !cookFlag {
+		http.SetCookie(w, &http.Cookie{
+			Name:  "UserID",
+			Value: cookVal,
+		})
+	}
+	if cookVal == "" {
+		http.Error(w, "Failed UserID", http.StatusUnauthorized)
+		return
 	}
 
 	if result, err := serv.Get(r.URL.Path[1:], "key", ""); err == nil && result != "" {
@@ -323,4 +340,15 @@ func (serv *HStorage) GetURLS(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Something bad with write address", http.StatusBadRequest)
 		return
 	}
+}
+
+func (serv *HStorage) DelURLS(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		http.Error(w, "There is not true method", http.StatusBadRequest)
+		return
+	}
+	body := r.Body
+	defer body.Close()
+
+	fmt.Println("Body: ", body)
 }
