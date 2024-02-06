@@ -84,22 +84,6 @@ func (serv *HStorage) GetHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "There is not true method", http.StatusBadRequest)
 	}
 
-	cookVal, cookFlag, err := serv.CheckCookie(r)
-	if err != nil {
-		http.Error(w, "Something bad with check cookie", http.StatusBadRequest)
-		return
-	}
-	if !cookFlag {
-		http.SetCookie(w, &http.Cookie{
-			Name:  "UserID",
-			Value: cookVal,
-		})
-	}
-	if cookVal == "" {
-		http.Error(w, "Failed UserID", http.StatusUnauthorized)
-		return
-	}
-
 	if result, err := serv.Get(r.URL.Path[1:], "key", ""); err == nil && result != "" {
 		w.Header().Add("Location", result)
 		w.WriteHeader(http.StatusTemporaryRedirect)
