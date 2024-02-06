@@ -334,7 +334,7 @@ func (serv *HStorage) DelURLS(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var buf bytes.Buffer
-	var s string
+	var s []string
 
 	if _, err := buf.ReadFrom(r.Body); err != nil {
 		http.Error(w, "Something bad with read body", http.StatusBadRequest)
@@ -342,12 +342,19 @@ func (serv *HStorage) DelURLS(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	if err := json.Unmarshal(buf.Bytes(), &s); err != nil {
-		http.Error(w, "Something bad with decoding JSON", http.StatusBadRequest)
-		return
+	err := json.Unmarshal(buf.Bytes(), &s)
+	if err != nil {
+		fmt.Println(err)
 	}
 
 	fmt.Println("URLS:", s)
 
 	w.WriteHeader(http.StatusAccepted)
+	//var arr []string
+	//err := json.Unmarshal([]byte(s), &arr)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//
+	//fmt.Println(arr)
 }
