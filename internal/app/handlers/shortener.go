@@ -327,12 +327,29 @@ func (serv *HStorage) GetURLS(w http.ResponseWriter, r *http.Request) {
 }
 
 func (serv *HStorage) DelURLS(w http.ResponseWriter, r *http.Request) {
+	type Decoder struct {
+		LongURL string `json:"url"`
+	}
+
 	if r.Method != http.MethodDelete {
 		http.Error(w, "There is not true method", http.StatusBadRequest)
 		return
 	}
-	body := r.Body
-	defer body.Close()
 
-	fmt.Println("Body: ", body)
+	var buf bytes.Buffer
+	var dec Decoder
+
+	if _, err := buf.ReadFrom(r.Body); err != nil {
+		http.Error(w, "Something bad with read body", http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+
+	if err := json.Unmarshal(buf.Bytes(), &dec); err != nil {
+		http.Error(w, "Something bad with decoding JSON", http.StatusBadRequest)
+		return
+	}
+
+	fmt.Println(dec.LongURL)
+
 }
