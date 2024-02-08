@@ -5,7 +5,6 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -84,7 +83,13 @@ func (serv *HStorage) GetHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "There is not true method", http.StatusBadRequest)
 	}
 
-	if result, err := serv.Get(r.URL.Path[1:], "key", ""); err == nil && result != "" {
+	result, myflag, err := serv.Get(r.URL.Path[1:], "key", "")
+	if err != nil {
+		http.Error(w, "Something bad with GetHandler", http.StatusBadRequest)
+		return
+	} else if myflag[0] {
+		w.WriteHeader(http.StatusGone)
+	} else if result != "" {
 		w.Header().Add("Location", result)
 		w.WriteHeader(http.StatusTemporaryRedirect)
 	} else {
@@ -296,7 +301,7 @@ func (serv *HStorage) GetURLS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	mystr, err := serv.Get("", "all", cookVal)
+	mystr, _, err := serv.Get("", "all", cookVal)
 	if err != nil {
 		http.Error(w, "Something bad with GetAllURLS", http.StatusBadRequest)
 		return
@@ -309,7 +314,8 @@ func (serv *HStorage) GetURLS(w http.ResponseWriter, r *http.Request) {
 	myarr := strings.Split(mystr, "*")
 	var jo []JSONstr
 	for i := 0; i < len(myarr); i += 2 {
-		jo = append(jo, JSONstr{Key: serv.GetConfigParameter("baseURL") + "/" + myarr[i], Value: myarr[i+1]})
+		jo = append(jo, JSONstr{Key: serv.GetConfigParameter("baseURL") + "/" + myarr[i],
+			Value: myarr[i+1]})
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -333,6 +339,13 @@ func (serv *HStorage) DelURLS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if r.Header.Get("Content-Type") != "application/json" {
+		http.Error(w, "There is incorrect data format", http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusAccepted)
+
 	var buf bytes.Buffer
 	var s []string
 
@@ -344,17 +357,8 @@ func (serv *HStorage) DelURLS(w http.ResponseWriter, r *http.Request) {
 
 	err := json.Unmarshal(buf.Bytes(), &s)
 	if err != nil {
-		fmt.Println(err)
+		http.Error(w, "Something bad with Unmarshal", http.StatusBadRequest)
+		return
 	}
 
-	fmt.Println("URLS:", s)
-
-	w.WriteHeader(http.StatusAccepted)
-	//var arr []string
-	//err := json.Unmarshal([]byte(s), &arr)
-	//if err != nil {
-	//	panic(err)
-	//}
-	//
-	//fmt.Println(arr)
 }

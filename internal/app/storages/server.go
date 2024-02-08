@@ -59,7 +59,7 @@ func (serv *ServerStorage) MakeDB() {
 	defer cancel()
 
 	_, err = db.ExecContext(ctx,
-		`CREATE TABLE IF NOT EXISTS shortener(short_url text, long_url text, user_id text)`)
+		`CREATE TABLE IF NOT EXISTS shortener(short_url text, long_url text, user_id text, deleted boolean)`)
 	if err != nil {
 		panic(err)
 	}
@@ -96,7 +96,7 @@ func (serv *ServerStorage) SetConfigParameter(value string, param string) {
 }
 
 func (serv *ServerStorage) MakeShortURL(longURL string) (string, bool, error) {
-	value, err := serv.Get(longURL, "value", "")
+	value, _, err := serv.Get(longURL, "value", "")
 	if err != nil {
 		return "", false, err
 	}
@@ -105,7 +105,7 @@ func (serv *ServerStorage) MakeShortURL(longURL string) (string, bool, error) {
 	} else {
 		shortKey := tools.GenerateShortKey()
 		for {
-			result, err := serv.Get(shortKey, "key", "")
+			result, _, err := serv.Get(shortKey, "key", "")
 			if err != nil {
 				return "", false, err
 			}
@@ -119,7 +119,7 @@ func (serv *ServerStorage) MakeShortURL(longURL string) (string, bool, error) {
 
 // get
 
-func (serv *ServerStorage) Get(value string, param string, userid string) (string, error) {
+func (serv *ServerStorage) Get(value string, param string, userid string) (string, []bool, error) {
 	if serv.GetConfigParameter("db") != "" {
 		return serv.GetDBData(value, param, userid)
 	}
@@ -129,10 +129,10 @@ func (serv *ServerStorage) Get(value string, param string, userid string) (strin
 	return serv.GetStorageData(value, param, userid)
 }
 
-func (serv *ServerStorage) GetDBData(value string, param string, userid string) (string, error) {
+func (serv *ServerStorage) GetDBData(value string, param string, userid string) (string, []bool, error) {
 	db, err := sql.Open("pgx", serv.GetConfigParameter("db"))
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 	defer db.Close()
 
@@ -143,118 +143,125 @@ func (serv *ServerStorage) GetDBData(value string, param string, userid string) 
 	var rows *sql.Rows
 
 	if param == "key" {
-		row = db.QueryRowContext(ctx, `SELECT long_url FROM shortener WHERE short_url = $1`, value)
+		row = db.QueryRowContext(ctx, `SELECT long_url, deleted FROM shortener WHERE short_url = $1`, value)
 	} else if param == "value" {
-		row = db.QueryRowContext(ctx, `SELECT short_url FROM shortener WHERE long_url = $1`, value)
+		row = db.QueryRowContext(ctx, `SELECT short_url, deleted FROM shortener WHERE long_url = $1`, value)
 	} else if param == "all" {
 		rows, err = db.QueryContext(ctx, `SELECT * FROM shortener WHERE user_id = $1`, userid)
 		if err != nil {
-			return "", nil
+			return "", nil, nil
 		}
 		defer rows.Close()
 	} else {
-		return "", errors.New("unknown param")
+		return "", nil, errors.New("unknown param")
 	}
 
 	if row != nil {
 		var result string
-		err = row.Scan(&result)
+		var deleted bool
+		err = row.Scan(&result, &deleted)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
-				return "", nil
+				return "", nil, nil
 			} else {
-				return "", err
+				return "", nil, err
 			}
 		}
-		return result, nil
+		return result, []bool{deleted}, nil
 	} else {
 		var stors []Storage
 		for rows.Next() {
 			var stor Storage
-			if err = rows.Scan(&stor.key, &stor.value, &stor.userid); err != nil {
+			if err = rows.Scan(&stor.key, &stor.value, &stor.userid, &stor.deleted); err != nil {
 				if errors.Is(err, sql.ErrNoRows) {
-					return "", nil
+					return "", nil, nil
 				} else {
-					return "", err
+					return "", nil, err
 				}
 			}
 			stors = append(stors, stor)
 		}
 		if err = rows.Err(); err != nil {
-			return "", err
+			return "", nil, err
 		}
 		mystr := ""
+		var mybool []bool
 		for _, elem := range stors {
 			mystr += elem.key + "*" + elem.value + "*"
+			mybool = append(mybool, elem.deleted)
 		}
 		if mystr != "" {
-			return mystr[:len(mystr)-1], nil
+			return mystr[:len(mystr)-1], mybool, nil
 		}
-		return "", nil
+		return "", nil, nil
 	}
 }
 
-func (serv *ServerStorage) GetFileData(value string, param string, userid string) (string, error) {
+func (serv *ServerStorage) GetFileData(value string, param string, userid string) (string, []bool, error) {
 	jsonData, err := tools.ReadFile(serv.GetConfigParameter("file"))
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 
 	if param == "key" {
 		for _, elem := range jsonData {
 			if elem.Key == value {
-				return elem.Value, nil
+				return elem.Value, []bool{elem.Deleted}, nil
 			}
 		}
 	} else if param == "value" {
 		for _, elem := range jsonData {
 			if elem.Value == value {
-				return elem.Key, nil
+				return elem.Key, []bool{elem.Deleted}, nil
 			}
 		}
 	} else if param == "all" {
 		mystr := ""
+		var mybool []bool
 		for _, elem := range jsonData {
 			if elem.UserID == userid {
 				mystr += elem.Key + "*" + elem.Value + "*"
+				mybool = append(mybool, elem.Deleted)
 			}
 		}
 		if mystr != "" {
-			return mystr[:len(mystr)-1], nil
+			return mystr[:len(mystr)-1], mybool, nil
 		}
 	} else {
-		return "", errors.New("unknown param")
+		return "", nil, errors.New("unknown param")
 	}
-	return "", nil
+	return "", nil, nil
 }
 
-func (serv *ServerStorage) GetStorageData(value string, param string, userid string) (string, error) {
+func (serv *ServerStorage) GetStorageData(value string, param string, userid string) (string, []bool, error) {
 	if param == "key" {
 		for _, elem := range serv.st {
 			if elem.key == value {
-				return elem.value, nil
+				return elem.value, []bool{elem.deleted}, nil
 			}
 		}
 	} else if param == "value" {
 		for _, elem := range serv.st {
 			if elem.value == value {
-				return elem.key, nil
+				return elem.key, []bool{elem.deleted}, nil
 			}
 		}
 	} else if param == "all" {
 		mystr := ""
+		var mybool []bool
 		for _, elem := range serv.st {
 			if elem.userid == userid {
 				mystr += elem.key + "*" + elem.value + "*"
+				mybool = append(mybool, elem.deleted)
 			}
 		}
 		if mystr != "" {
-			return mystr[:len(mystr)-1], nil
+			return mystr[:len(mystr)-1], mybool, nil
 		}
 	} else {
-		return "", errors.New("unknown param")
+		return "", nil, errors.New("unknown param")
 	}
-	return "", nil
+	return "", nil, nil
 }
 
 // set
@@ -309,7 +316,8 @@ func (serv *ServerStorage) SetDBData(key string, value string, userid string) er
 	defer cancel()
 
 	_, err = db.ExecContext(ctx,
-		`INSERT INTO shortener (short_url, long_url, user_id) values ($1, $2, $3)`, key, value, userid)
+		`INSERT INTO shortener (short_url, long_url, user_id, deleted) values ($1, $2, $3, $4)`,
+		key, value, userid, false)
 	if err != nil {
 		return err
 	}
@@ -318,7 +326,7 @@ func (serv *ServerStorage) SetDBData(key string, value string, userid string) er
 }
 
 func (serv *ServerStorage) SetStorage(key string, value string, userid string) {
-	serv.st = append(serv.st, Storage{key: key, value: value, userid: userid})
+	serv.st = append(serv.st, *NewStorage(key, value, userid))
 }
 
 // cookie
