@@ -60,9 +60,7 @@ func (dbs *DBStorage) GetData(value string, param string, userid string) (string
 	for rows.Next() {
 		var item MSItem
 		if err = rows.Scan(&item.key, &item.value, &item.userid, &item.deleted); err != nil {
-			if err != nil {
-				return "", nil, err
-			}
+			return "", nil, err
 		}
 		items = append(items, item)
 	}

@@ -32,15 +32,15 @@ func (co *CookieStorage) InCookies(value string) bool {
 
 func (co *CookieStorage) CheckCookie(r *http.Request) (string, bool, error) {
 	cookie, err := r.Cookie("UserID")
-	if err != nil || !co.InCookies(cookie.Value) {
+	if err != nil {
+		return "non", false, nil
+	}
+	if !co.InCookies(cookie.Value) {
 		gen, err1 := tools.GenerateCookie(co.CountCookies() + 1)
 		if err1 != nil {
 			return "", false, err
 		}
 		co.SetCookie(gen)
-		if r.Method == http.MethodGet {
-			return "", false, nil
-		}
 		return gen, false, nil
 	}
 	return cookie.Value, true, nil

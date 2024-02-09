@@ -290,7 +290,7 @@ func (serv *HStorage) GetURLS(w http.ResponseWriter, r *http.Request) {
 
 	cs := serv.GetCS()
 	cookVal, cookFlag, err := cs.CheckCookie(r)
-	if err != nil {
+	if err != nil && cookVal != "non" {
 		http.Error(w, "Something bad with check cookie", http.StatusBadRequest)
 		return
 	}
@@ -300,7 +300,7 @@ func (serv *HStorage) GetURLS(w http.ResponseWriter, r *http.Request) {
 			Value: cookVal,
 		})
 	}
-	if cookVal == "" {
+	if cookVal == "non" {
 		http.Error(w, "Failed UserID", http.StatusUnauthorized)
 		return
 	}
