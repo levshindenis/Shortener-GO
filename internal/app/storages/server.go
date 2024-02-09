@@ -19,7 +19,7 @@ type ServerData struct {
 type ServerStorage struct {
 	sc config.ServerConfig
 	cs CookieStorage
-	sd ServerData
+	SD ServerData
 }
 
 func (serv *ServerStorage) Init() {
@@ -44,18 +44,18 @@ func (serv *ServerStorage) ParseFlags() {
 func (serv *ServerStorage) InitDB() {
 	db := DBStorage{address: serv.GetSC("db")}
 	db.MakeDB()
-	serv.sd = ServerData{data: &db}
+	serv.SD = ServerData{data: &db}
 }
 
 func (serv *ServerStorage) InitFile() {
 	file := FileStorage{path: serv.GetSC("file")}
 	file.MakeFile()
-	serv.sd = ServerData{data: &file}
+	serv.SD = ServerData{data: &file}
 }
 
 func (serv *ServerStorage) InitMemory() {
 	memory := MemoryStorage{arr: []MSItem{}}
-	serv.sd = ServerData{data: &memory}
+	serv.SD = ServerData{data: &memory}
 }
 
 func (serv *ServerStorage) GetSC(param string) string {
@@ -88,12 +88,12 @@ func (serv *ServerStorage) SetSC(value string, param string) {
 	}
 }
 
-func (serv *ServerStorage) GetCS() CookieStorage {
-	return serv.cs
+func (serv *ServerStorage) GetCS() *CookieStorage {
+	return &serv.cs
 }
 
 func (serv *ServerStorage) GetSD() GetterSetter {
-	return serv.sd.data
+	return serv.SD.data
 }
 
 func (serv *ServerStorage) MakeShortURL(longURL string) (string, bool, error) {

@@ -28,8 +28,7 @@ func (serv *HStorage) PostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cs := serv.GetCS()
-	cookVal, cookFlag, err := cs.CheckCookie(r)
+	cookVal, cookFlag, err := serv.GetCS().CheckCookie(r)
 	if err != nil {
 		http.Error(w, "Something bad with check cookie", http.StatusBadRequest)
 		return
@@ -116,8 +115,7 @@ func (serv *HStorage) JSONPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cs := serv.GetCS()
-	cookVal, cookFlag, err := cs.CheckCookie(r)
+	cookVal, cookFlag, err := serv.GetCS().CheckCookie(r)
 	if err != nil {
 		http.Error(w, "Something bad with check cookie", http.StatusBadRequest)
 		return
@@ -216,8 +214,7 @@ func (serv *HStorage) BatchPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cs := serv.GetCS()
-	cookVal, cookFlag, err := cs.CheckCookie(r)
+	cookVal, cookFlag, err := serv.GetCS().CheckCookie(r)
 	if err != nil {
 		http.Error(w, "Something bad with check cookie", http.StatusBadRequest)
 		return
@@ -289,14 +286,13 @@ func (serv *HStorage) GetURLS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cs := serv.GetCS()
-	cookVal, _, err := cs.CheckCookie(r)
+	cookVal, myflag, err := serv.GetCS().CheckCookie(r)
 	fmt.Println(cookVal)
-	if err != nil && cookVal != "non" {
+	if err != nil {
 		http.Error(w, "Something bad with check cookie", http.StatusBadRequest)
 		return
 	}
-	if cookVal == "non" {
+	if !myflag {
 		http.Error(w, "Failed UserID", http.StatusUnauthorized)
 		return
 	}
