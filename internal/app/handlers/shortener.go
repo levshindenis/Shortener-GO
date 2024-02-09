@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -289,16 +290,11 @@ func (serv *HStorage) GetURLS(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cs := serv.GetCS()
-	cookVal, cookFlag, err := cs.CheckCookie(r)
+	cookVal, _, err := cs.CheckCookie(r)
+	fmt.Println(cookVal)
 	if err != nil && cookVal != "non" {
 		http.Error(w, "Something bad with check cookie", http.StatusBadRequest)
 		return
-	}
-	if !cookFlag {
-		http.SetCookie(w, &http.Cookie{
-			Name:  "UserID",
-			Value: cookVal,
-		})
 	}
 	if cookVal == "non" {
 		http.Error(w, "Failed UserID", http.StatusUnauthorized)
