@@ -7,15 +7,6 @@ import (
 	"github.com/levshindenis/sprint1/internal/app/tools"
 )
 
-type GetterSetter interface {
-	SetData(key string, value string, userid string) error
-	GetData(value string, param string, userid string) (string, []bool, error)
-}
-
-type ServerData struct {
-	data GetterSetter
-}
-
 type ServerStorage struct {
 	sc config.ServerConfig
 	cs CookieStorage
@@ -28,9 +19,9 @@ func (serv *ServerStorage) Init() {
 }
 
 func (serv *ServerStorage) InitStorage() {
-	if serv.GetSC("db") != "" {
+	if serv.GetServerConfig("db") != "" {
 		serv.InitDB()
-	} else if serv.GetSC("file") != "" {
+	} else if serv.GetServerConfig("file") != "" {
 		serv.InitFile()
 	} else {
 		serv.InitMemory()
@@ -42,13 +33,13 @@ func (serv *ServerStorage) ParseFlags() {
 }
 
 func (serv *ServerStorage) InitDB() {
-	db := DBStorage{address: serv.GetSC("db")}
+	db := DBStorage{address: serv.GetServerConfig("db")}
 	db.MakeDB()
 	serv.SD = ServerData{data: &db}
 }
 
 func (serv *ServerStorage) InitFile() {
-	file := FileStorage{path: serv.GetSC("file")}
+	file := FileStorage{path: serv.GetServerConfig("file")}
 	file.MakeFile()
 	serv.SD = ServerData{data: &file}
 }
@@ -58,7 +49,7 @@ func (serv *ServerStorage) InitMemory() {
 	serv.SD = ServerData{data: &memory}
 }
 
-func (serv *ServerStorage) GetSC(param string) string {
+func (serv *ServerStorage) GetServerConfig(param string) string {
 	switch param {
 	case "address":
 		return serv.sc.GetStartAddress()
@@ -73,7 +64,7 @@ func (serv *ServerStorage) GetSC(param string) string {
 	}
 }
 
-func (serv *ServerStorage) SetSC(value string, param string) {
+func (serv *ServerStorage) SetServerConfig(value string, param string) {
 	switch param {
 	case "address":
 		serv.sc.SetStartAddress(value)
@@ -88,16 +79,16 @@ func (serv *ServerStorage) SetSC(value string, param string) {
 	}
 }
 
-func (serv *ServerStorage) GetCS() *CookieStorage {
+func (serv *ServerStorage) GetCookieStorage() *CookieStorage {
 	return &serv.cs
 }
 
-func (serv *ServerStorage) GetSD() GetterSetter {
+func (serv *ServerStorage) GetStorageData() GetterSetter {
 	return serv.SD.data
 }
 
 func (serv *ServerStorage) MakeShortURL(longURL string) (string, bool, error) {
-	value, _, err := serv.GetSD().GetData(longURL, "value", "")
+	value, _, err := serv.GetStorageData().GetData(longURL, "value", "")
 	if err != nil {
 		return "", false, err
 	}
@@ -106,7 +97,7 @@ func (serv *ServerStorage) MakeShortURL(longURL string) (string, bool, error) {
 	} else {
 		shortKey := tools.GenerateShortKey()
 		for {
-			result, _, err := serv.GetSD().GetData(shortKey, "key", "")
+			result, _, err := serv.GetStorageData().GetData(shortKey, "key", "")
 			if err != nil {
 				return "", false, err
 			}

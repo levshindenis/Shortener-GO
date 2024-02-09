@@ -28,7 +28,7 @@ func (serv *HStorage) PostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cookVal, cookFlag, err := serv.GetCS().CheckCookie(r)
+	cookVal, cookFlag, err := serv.GetCookieStorage().CheckCookie(r)
 	if err != nil {
 		http.Error(w, "Something bad with check cookie", http.StatusBadRequest)
 		return
@@ -66,13 +66,13 @@ func (serv *HStorage) PostHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusConflict)
 	} else {
 		w.WriteHeader(http.StatusCreated)
-		if err = serv.GetSD().SetData(address, string(body), cookVal); err != nil {
+		if err = serv.GetStorageData().SetData(address, string(body), cookVal); err != nil {
 			http.Error(w, "Something bad with Save", http.StatusBadRequest)
 			return
 		}
 	}
 
-	address = serv.GetSC("baseURL") + "/" + address
+	address = serv.GetServerConfig("baseURL") + "/" + address
 	if _, err := w.Write([]byte(address)); err != nil {
 		http.Error(w, "Something bad with write address", http.StatusBadRequest)
 		return
@@ -84,7 +84,7 @@ func (serv *HStorage) GetHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "There is not true method", http.StatusBadRequest)
 	}
 
-	result, isdeleted, err := serv.GetSD().GetData(r.URL.Path[1:], "key", "")
+	result, isdeleted, err := serv.GetStorageData().GetData(r.URL.Path[1:], "key", "")
 	if err != nil {
 		http.Error(w, "Something bad with GetHandler", http.StatusBadRequest)
 		return
@@ -115,7 +115,7 @@ func (serv *HStorage) JSONPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cookVal, cookFlag, err := serv.GetCS().CheckCookie(r)
+	cookVal, cookFlag, err := serv.GetCookieStorage().CheckCookie(r)
 	if err != nil {
 		http.Error(w, "Something bad with check cookie", http.StatusBadRequest)
 		return
@@ -155,13 +155,13 @@ func (serv *HStorage) JSONPostHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusConflict)
 	} else {
 		w.WriteHeader(http.StatusCreated)
-		if err = serv.GetSD().SetData(enc.ShortURL, dec.LongURL, cookVal); err != nil {
+		if err = serv.GetStorageData().SetData(enc.ShortURL, dec.LongURL, cookVal); err != nil {
 			http.Error(w, "Something bad with Save", http.StatusBadRequest)
 			return
 		}
 	}
 
-	enc.ShortURL = serv.GetSC("baseURL") + "/" + enc.ShortURL
+	enc.ShortURL = serv.GetServerConfig("baseURL") + "/" + enc.ShortURL
 
 	resp, err := json.Marshal(enc)
 	if err != nil {
@@ -180,7 +180,7 @@ func (serv *HStorage) GetPingHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "There is not true method", http.StatusBadRequest)
 	}
 
-	db, err := sql.Open("pgx", serv.GetSC("db"))
+	db, err := sql.Open("pgx", serv.GetServerConfig("db"))
 	if err != nil {
 		http.Error(w, "Something bad with open db", http.StatusInternalServerError)
 		return
@@ -214,7 +214,7 @@ func (serv *HStorage) BatchPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cookVal, cookFlag, err := serv.GetCS().CheckCookie(r)
+	cookVal, cookFlag, err := serv.GetCookieStorage().CheckCookie(r)
 	if err != nil {
 		http.Error(w, "Something bad with check cookie", http.StatusBadRequest)
 		return
@@ -253,13 +253,13 @@ func (serv *HStorage) BatchPostHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if !flag {
-			if err = serv.GetSD().SetData(short, elem.LongURL, cookVal); err != nil {
+			if err = serv.GetStorageData().SetData(short, elem.LongURL, cookVal); err != nil {
 				http.Error(w, "Something bad with Save", http.StatusBadRequest)
 				return
 			}
 		}
 
-		short = serv.GetSC("baseURL") + "/" + short
+		short = serv.GetServerConfig("baseURL") + "/" + short
 		enc = append(enc, Encoder{ID: elem.ID, ShortURL: short})
 	}
 
@@ -286,7 +286,7 @@ func (serv *HStorage) GetURLS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cookVal, myflag, err := serv.GetCS().CheckCookie(r)
+	cookVal, myflag, err := serv.GetCookieStorage().CheckCookie(r)
 	fmt.Println(cookVal)
 	if err != nil {
 		http.Error(w, "Something bad with check cookie", http.StatusBadRequest)
@@ -297,7 +297,7 @@ func (serv *HStorage) GetURLS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	mystr, _, err := serv.GetSD().GetData("", "all", cookVal)
+	mystr, _, err := serv.GetStorageData().GetData("", "all", cookVal)
 	if err != nil {
 		http.Error(w, "Something bad with GetAllURLS", http.StatusBadRequest)
 		return
@@ -310,7 +310,7 @@ func (serv *HStorage) GetURLS(w http.ResponseWriter, r *http.Request) {
 	myarr := strings.Split(mystr, "*")
 	var jo []JSONstr
 	for i := 0; i < len(myarr); i += 2 {
-		jo = append(jo, JSONstr{Key: serv.GetSC("baseURL") + "/" + myarr[i],
+		jo = append(jo, JSONstr{Key: serv.GetServerConfig("baseURL") + "/" + myarr[i],
 			Value: myarr[i+1]})
 	}
 

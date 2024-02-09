@@ -17,8 +17,8 @@ func (co *CookieStorage) CountCookies() int {
 	return len(co.GetArr())
 }
 
-func (co *CookieStorage) SetCookie(value string) {
-	co.arr = append(co.arr, value)
+func (co *CookieStorage) AddCookie(value string) {
+	co.arr = append(co.GetArr(), value)
 }
 
 func (co *CookieStorage) InCookies(value string) bool {
@@ -37,7 +37,7 @@ func (co *CookieStorage) CheckCookie(r *http.Request) (string, bool, error) {
 		if err1 != nil {
 			return "", false, err
 		}
-		co.SetCookie(gen)
+		co.AddCookie(gen)
 		return gen, false, nil
 	}
 	return cookie.Value, true, nil
