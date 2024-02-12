@@ -110,6 +110,9 @@ func (dbs *DBStorage) DeleteData(delValues []DeleteValue) error {
 	defer cancel()
 
 	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
 
 	for _, elem := range delValues {
 		row := db.QueryRowContext(ctx, `SELECT user_id FROM shortener WHERE short_url = $1`, elem.Value)
