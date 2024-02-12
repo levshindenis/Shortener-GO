@@ -60,9 +60,9 @@ func (ms *MemoryStorage) GetData(value string, param string, userid string) (str
 
 func (ms *MemoryStorage) DeleteData(delValues []DeleteValue) error {
 	for _, elem := range delValues {
-		for _, msi := range ms.GetArr() {
+		for ind, msi := range ms.GetArr() {
 			if msi.key == elem.Value && msi.userid == elem.Userid {
-				msi.deleted = true
+				ms.GetArr()[ind].deleted = true
 			}
 		}
 	}
