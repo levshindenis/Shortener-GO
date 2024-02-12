@@ -2,6 +2,7 @@ package storages
 
 import (
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"time"
 
 	"github.com/levshindenis/sprint1/internal/app/config"
 	"github.com/levshindenis/sprint1/internal/app/tools"
@@ -10,12 +11,15 @@ import (
 type ServerStorage struct {
 	sc config.ServerConfig
 	cs CookieStorage
-	SD ServerData
+	sd ServerData
+	ch chan DeleteValue
 }
 
 func (serv *ServerStorage) Init() {
 	serv.ParseFlags()
 	serv.InitStorage()
+	serv.ch = make(chan DeleteValue, 1024)
+	go serv.DeleteItems()
 }
 
 func (serv *ServerStorage) InitStorage() {
@@ -35,18 +39,18 @@ func (serv *ServerStorage) ParseFlags() {
 func (serv *ServerStorage) InitDB() {
 	db := DBStorage{address: serv.GetServerConfig("db")}
 	db.MakeDB()
-	serv.SD = ServerData{data: &db}
+	serv.sd = ServerData{data: &db}
 }
 
 func (serv *ServerStorage) InitFile() {
 	file := FileStorage{path: serv.GetServerConfig("file")}
 	file.MakeFile()
-	serv.SD = ServerData{data: &file}
+	serv.sd = ServerData{data: &file}
 }
 
 func (serv *ServerStorage) InitMemory() {
 	memory := MemoryStorage{arr: []MSItem{}}
-	serv.SD = ServerData{data: &memory}
+	serv.sd = ServerData{data: &memory}
 }
 
 func (serv *ServerStorage) GetServerConfig(param string) string {
@@ -83,12 +87,16 @@ func (serv *ServerStorage) GetCookieStorage() *CookieStorage {
 	return &serv.cs
 }
 
-func (serv *ServerStorage) GetStorageData() GetterSetter {
-	return serv.SD.data
+func (serv *ServerStorage) GetStorageData() BaseFuncs {
+	return serv.sd.data
+}
+
+func (serv *ServerStorage) SetChan(delValue DeleteValue) {
+	serv.ch <- delValue
 }
 
 func (serv *ServerStorage) MakeShortURL(longURL string) (string, bool, error) {
-	value, _, err := serv.GetStorageData().GetData(longURL, "value", "")
+	value, _, err := serv.GetStorageData().GetData(longURL, "Value", "")
 	if err != nil {
 		return "", false, err
 	}
@@ -105,6 +113,32 @@ func (serv *ServerStorage) MakeShortURL(longURL string) (string, bool, error) {
 				return shortKey, false, nil
 			}
 			shortKey = tools.GenerateShortKey()
+		}
+	}
+}
+
+func (serv *ServerStorage) DeleteItems() {
+	ticker := time.NewTicker(2 * time.Second)
+
+	var values []DeleteValue
+
+	for {
+		select {
+		case value := <-serv.ch:
+			// добавим сообщение в слайс для последующего сохранения
+			values = append(values, value)
+		case <-ticker.C:
+			// подождём, пока придёт хотя бы одно сообщение
+			if len(values) == 0 {
+				continue
+			}
+			// сохраним все пришедшие сообщения одновременно
+			err := serv.GetStorageData().DeleteData(values)
+			if err != nil {
+				panic(err)
+			}
+			// сотрём успешно отосланные сообщения
+			values = nil
 		}
 	}
 }

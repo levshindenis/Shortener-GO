@@ -1,10 +1,16 @@
 package storages
 
-type GetterSetter interface {
+type BaseFuncs interface {
 	SetData(key string, value string, userid string) error
 	GetData(value string, param string, userid string) (string, []bool, error)
+	DeleteData(delValues []DeleteValue) error
 }
 
 type ServerData struct {
-	data GetterSetter
+	data BaseFuncs
+}
+
+type DeleteValue struct {
+	Value  string
+	Userid string
 }

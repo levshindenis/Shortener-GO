@@ -1,6 +1,8 @@
 package storages
 
-import "errors"
+import (
+	"errors"
+)
 
 type MemoryStorage struct {
 	arr []MSItem
@@ -13,26 +15,26 @@ type MSItem struct {
 	deleted bool
 }
 
-func (st *MemoryStorage) GetArr() []MSItem {
-	return st.arr
+func (ms *MemoryStorage) GetArr() []MSItem {
+	return ms.arr
 }
 
-func (st *MemoryStorage) SetData(key string, value string, userid string) error {
-	st.arr = append(st.GetArr(), MSItem{key: key, value: value, userid: userid, deleted: false})
+func (ms *MemoryStorage) SetData(key string, value string, userid string) error {
+	ms.arr = append(ms.GetArr(), MSItem{key: key, value: value, userid: userid, deleted: false})
 	return nil
 }
 
-func (st *MemoryStorage) GetData(value string, param string, userid string) (string, []bool, error) {
+func (ms *MemoryStorage) GetData(value string, param string, userid string) (string, []bool, error) {
 	if param == "key" {
-		for _, elem := range st.GetArr() {
+		for _, elem := range ms.GetArr() {
 			if elem.key == value {
 				return elem.value, []bool{elem.deleted}, nil
 			}
 		}
 		return "", nil, nil
 	}
-	if param == "value" {
-		for _, elem := range st.GetArr() {
+	if param == "Value" {
+		for _, elem := range ms.GetArr() {
 			if elem.value == value {
 				return elem.key, []bool{elem.deleted}, nil
 			}
@@ -42,7 +44,7 @@ func (st *MemoryStorage) GetData(value string, param string, userid string) (str
 	if param == "all" {
 		mystr := ""
 		var mybool []bool
-		for _, elem := range st.GetArr() {
+		for _, elem := range ms.GetArr() {
 			if elem.userid == userid {
 				mystr += elem.key + "*" + elem.value + "*"
 				mybool = append(mybool, elem.deleted)
@@ -54,4 +56,15 @@ func (st *MemoryStorage) GetData(value string, param string, userid string) (str
 		return "", nil, nil
 	}
 	return "", nil, errors.New("unknown param")
+}
+
+func (ms *MemoryStorage) DeleteData(delValues []DeleteValue) error {
+	for _, elem := range delValues {
+		for _, msi := range ms.GetArr() {
+			if msi.key == elem.Value && msi.userid == elem.Userid {
+				msi.deleted = true
+			}
+		}
+	}
+	return nil
 }

@@ -30,7 +30,7 @@ func (fs *FileStorage) GetData(value string, param string, userid string) (strin
 		}
 		return "", nil, nil
 	}
-	if param == "value" {
+	if param == "Value" {
 		for _, elem := range jsonData {
 			if elem.Value == value {
 				return elem.Key, []bool{elem.Deleted}, nil
@@ -68,6 +68,37 @@ func (fs *FileStorage) SetData(key string, value string, userid string) error {
 	defer file.Close()
 
 	jsonData = append(jsonData, tools.JSONData{UUID: len(jsonData) + 1, Key: key, Value: value, UserID: userid})
+	toFileData, err := json.MarshalIndent(jsonData, "", "   ")
+	if err != nil {
+		return err
+	}
+
+	if _, err = file.Write(toFileData); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (fs *FileStorage) DeleteData(delValues []DeleteValue) error {
+	jsonData, err := tools.ReadFile(fs.GetPath())
+	if err != nil {
+		return err
+	}
+
+	file, err := os.OpenFile(fs.GetPath(), os.O_TRUNC|os.O_WRONLY, os.ModePerm)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	for _, elem := range delValues {
+		for ind, jd := range jsonData {
+			if elem.Value == jd.Value && elem.Userid == jd.UserID {
+				jsonData[ind].Deleted = true
+			}
+		}
+	}
+
 	toFileData, err := json.MarshalIndent(jsonData, "", "   ")
 	if err != nil {
 		return err

@@ -340,10 +340,8 @@ func (serv *HStorage) DelURLS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusAccepted)
-
 	var buf bytes.Buffer
-	var s []string
+	var shortURLS []string
 
 	if _, err := buf.ReadFrom(r.Body); err != nil {
 		http.Error(w, "Something bad with read body", http.StatusBadRequest)
@@ -351,10 +349,21 @@ func (serv *HStorage) DelURLS(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	err := json.Unmarshal(buf.Bytes(), &s)
+	err := json.Unmarshal(buf.Bytes(), &shortURLS)
 	if err != nil {
 		http.Error(w, "Something bad with Unmarshal", http.StatusBadRequest)
 		return
 	}
 
+	cookie, err := r.Cookie("UserID")
+	if err != nil {
+		http.Error(w, "Something bad with cookie", http.StatusBadRequest)
+		return
+	}
+
+	for _, elem := range shortURLS {
+		serv.SetChan(storages.DeleteValue{Value: elem, Userid: cookie.Value})
+	}
+
+	w.WriteHeader(http.StatusAccepted)
 }

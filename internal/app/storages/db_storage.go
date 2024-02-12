@@ -30,7 +30,7 @@ func (dbs *DBStorage) GetData(value string, param string, userid string) (string
 
 	if param == "key" {
 		row = db.QueryRowContext(ctx, `SELECT long_url, deleted FROM shortener WHERE short_url = $1`, value)
-	} else if param == "value" {
+	} else if param == "Value" {
 		row = db.QueryRowContext(ctx, `SELECT short_url, deleted FROM shortener WHERE long_url = $1`, value)
 	} else if param == "all" {
 		rows, err = db.QueryContext(ctx, `SELECT * FROM shortener WHERE user_id = $1`, userid)
@@ -97,6 +97,43 @@ func (dbs *DBStorage) SetData(key string, value string, userid string) error {
 	}
 
 	return nil
+}
+
+func (dbs *DBStorage) DeleteData(delValues []DeleteValue) error {
+	db, err := sql.Open("pgx", dbs.GetAddress())
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	tx, err := db.Begin()
+
+	for _, elem := range delValues {
+		row := db.QueryRowContext(ctx, `SELECT user_id FROM shortener WHERE short_url = $1`, elem.Value)
+		var result string
+		err = row.Scan(&result)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				continue
+			} else {
+				return err
+			}
+		}
+		if result != elem.Userid {
+			continue
+		}
+		_, err = tx.ExecContext(ctx,
+			`UPDATE shortener SET deleted = $1 WHERE short_url = $2`, true, elem.Value)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	return tx.Commit()
 }
 
 func (dbs *DBStorage) MakeDB() {
