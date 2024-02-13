@@ -29,7 +29,7 @@ func TestHSStorage_PostHandler(t *testing.T) {
 			method:       http.MethodPost,
 			address:      "localhost:8000",
 			requestBody:  "https://yandex.ru/",
-			expectedCode: http.StatusBadRequest,
+			expectedCode: http.StatusCreated,
 			emptyBody:    false,
 		},
 		{
@@ -127,7 +127,7 @@ func TestHSStorage_JSONPostHandler(t *testing.T) {
 			address:      "localhost:8000",
 			requestBody:  "{\"url\":\"https://practicum.yandex.ru\"}",
 			contentType:  "application/json",
-			expectedCode: http.StatusBadRequest,
+			expectedCode: http.StatusCreated,
 			emptyBody:    false,
 		},
 		{
