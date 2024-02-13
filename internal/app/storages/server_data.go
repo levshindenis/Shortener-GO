@@ -1,5 +1,7 @@
 package storages
 
+import "context"
+
 type BaseFuncs interface {
 	SetData(key string, value string, userid string) error
 	GetData(value string, param string, userid string) (string, []bool, error)
@@ -13,4 +15,10 @@ type ServerData struct {
 type DeleteValue struct {
 	Value  string
 	Userid string
+}
+
+type ChanData struct {
+	ch     chan DeleteValue
+	ctx    context.Context
+	cancel context.CancelFunc
 }

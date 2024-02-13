@@ -275,7 +275,7 @@ func (serv *HStorage) BatchPostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (serv *HStorage) GetURLS(w http.ResponseWriter, r *http.Request) {
+func (serv *HStorage) GetURLs(w http.ResponseWriter, r *http.Request) {
 	type JSONstr struct {
 		Key   string `json:"short_url"`
 		Value string `json:"original_url"`
@@ -328,7 +328,7 @@ func (serv *HStorage) GetURLS(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (serv *HStorage) DelURLS(w http.ResponseWriter, r *http.Request) {
+func (serv *HStorage) DelURLs(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != http.MethodDelete {
 		http.Error(w, "There is not true method", http.StatusBadRequest)

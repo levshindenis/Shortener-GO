@@ -3,9 +3,10 @@ package storages
 import (
 	"encoding/json"
 	"errors"
-	"github.com/levshindenis/sprint1/internal/app/tools"
 	"os"
 	"path/filepath"
+
+	"github.com/levshindenis/sprint1/internal/app/tools"
 )
 
 type FileStorage struct {

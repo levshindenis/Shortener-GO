@@ -1,6 +1,7 @@
 package storages
 
 import (
+	"context"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"time"
 
@@ -12,14 +13,13 @@ type ServerStorage struct {
 	sc config.ServerConfig
 	cs CookieStorage
 	sd ServerData
-	ch chan DeleteValue
+	cd ChanData
 }
 
 func (serv *ServerStorage) Init() {
 	serv.ParseFlags()
 	serv.InitStorage()
-	serv.ch = make(chan DeleteValue, 1024)
-	go serv.DeleteItems()
+	serv.InitCh()
 }
 
 func (serv *ServerStorage) InitStorage() {
@@ -52,6 +52,18 @@ func (serv *ServerStorage) InitMemory() {
 	memory := MemoryStorage{arr: []MSItem{}}
 	serv.sd = ServerData{data: &memory}
 }
+
+func (serv *ServerStorage) InitCh() {
+	serv.cd.ch = make(chan DeleteValue, 1024)
+	serv.cd.ctx, serv.cd.cancel = context.WithCancel(context.Background())
+	go serv.DeleteItems(serv.cd.ctx)
+}
+
+func (serv *ServerStorage) CancelCh() {
+	serv.cd.cancel()
+}
+
+//
 
 func (serv *ServerStorage) GetServerConfig(param string) string {
 	switch param {
@@ -92,8 +104,10 @@ func (serv *ServerStorage) GetStorageData() BaseFuncs {
 }
 
 func (serv *ServerStorage) SetChan(delValue DeleteValue) {
-	serv.ch <- delValue
+	serv.cd.ch <- delValue
 }
+
+//
 
 func (serv *ServerStorage) MakeShortURL(longURL string) (string, bool, error) {
 	value, _, err := serv.GetStorageData().GetData(longURL, "Value", "")
@@ -117,27 +131,26 @@ func (serv *ServerStorage) MakeShortURL(longURL string) (string, bool, error) {
 	}
 }
 
-func (serv *ServerStorage) DeleteItems() {
+func (serv *ServerStorage) DeleteItems(ctx context.Context) {
 	ticker := time.NewTicker(2 * time.Second)
 
 	var values []DeleteValue
 
 	for {
 		select {
-		case value := <-serv.ch:
-			// добавим сообщение в слайс для последующего сохранения
+		case <-ctx.Done():
+			serv.SetChan(DeleteValue{})
+			return
+		case value := <-serv.cd.ch:
 			values = append(values, value)
 		case <-ticker.C:
-			// подождём, пока придёт хотя бы одно сообщение
 			if len(values) == 0 {
 				continue
 			}
-			// сохраним все пришедшие сообщения одновременно
 			err := serv.GetStorageData().DeleteData(values)
 			if err != nil {
 				panic(err)
 			}
-			// сотрём успешно отосланные сообщения
 			values = nil
 		}
 	}

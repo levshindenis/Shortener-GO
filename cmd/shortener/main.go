@@ -8,14 +8,14 @@ import (
 )
 
 func main() {
-	if err := run(); err != nil {
-		panic(err)
-	}
-}
-
-func run() error {
 	var server handlers.HStorage
 	server.Init()
+	if err := run(server); err != nil {
+		panic(err)
+	}
+	server.CancelCh()
+}
 
+func run(server handlers.HStorage) error {
 	return http.ListenAndServe(server.GetServerConfig("address"), routers.MyRouter(server))
 }
