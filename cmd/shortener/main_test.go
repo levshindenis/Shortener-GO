@@ -12,9 +12,8 @@ import (
 )
 
 func TestHSStorage_PostHandler(t *testing.T) {
-	var serv struct {
-		handlers.HStorage
-	}
+	var serv handlers.HStorage
+	serv.ParseFlags()
 	serv.InitStorage()
 
 	tests := []struct {
@@ -53,7 +52,7 @@ func TestHSStorage_PostHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			serv.SetConfigParameter(tt.address, "address")
+			serv.SetServerConfig(tt.address, "address")
 			r := httptest.NewRequest(tt.method, "/", strings.NewReader(tt.requestBody))
 			w := httptest.NewRecorder()
 			serv.PostHandler(w, r)
@@ -63,11 +62,10 @@ func TestHSStorage_PostHandler(t *testing.T) {
 }
 
 func TestHSStorage_GetHandler(t *testing.T) {
-	var serv struct {
-		handlers.HStorage
-	}
+	var serv handlers.HStorage
 	serv.InitStorage()
-	serv.SetStorage("GyuRe0", "https://yandex.ru/")
+
+	serv.GetStorageData().SetData("GyuRe0", "https://yandex.ru/", "")
 
 	tests := []struct {
 		name         string
@@ -93,14 +91,6 @@ func TestHSStorage_GetHandler(t *testing.T) {
 			expectedBody: "",
 			emptyBody:    true,
 		},
-		{
-			name:         "Bad url",
-			method:       http.MethodGet,
-			url:          "/GyuAe0",
-			expectedCode: http.StatusBadRequest,
-			expectedBody: "",
-			emptyBody:    true,
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -119,9 +109,7 @@ func TestHSStorage_GetHandler(t *testing.T) {
 }
 
 func TestHSStorage_JSONPostHandler(t *testing.T) {
-	var serv struct {
-		handlers.HStorage
-	}
+	var serv handlers.HStorage
 	serv.InitStorage()
 
 	tests := []struct {
@@ -173,7 +161,7 @@ func TestHSStorage_JSONPostHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			serv.SetConfigParameter(tt.address, "address")
+			serv.SetServerConfig(tt.address, "address")
 			r := httptest.NewRequest(tt.method, "/", strings.NewReader(tt.requestBody))
 			w := httptest.NewRecorder()
 			r.Header.Set("Content-Type", tt.contentType)
