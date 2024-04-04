@@ -4,17 +4,11 @@ import (
 	"encoding/json"
 	"io"
 	"os"
+
+	"github.com/levshindenis/sprint1/internal/app/models"
 )
 
-type JSONData struct {
-	UUID    int    `json:"uuid"`
-	Key     string `json:"short_url"`
-	Value   string `json:"original_url"`
-	UserID  string `json:"user_id"`
-	Deleted bool   `json:"deleted"`
-}
-
-func ReadFile(filepath string) ([]JSONData, error) {
+func ReadFile(filepath string) ([]models.JSONData, error) {
 	file, err := os.OpenFile(filepath, os.O_RDONLY, os.ModePerm)
 	if err != nil {
 		return nil, err
@@ -26,7 +20,7 @@ func ReadFile(filepath string) ([]JSONData, error) {
 		return nil, err
 	}
 
-	var jsonData []JSONData
+	var jsonData []models.JSONData
 	if err = json.Unmarshal(fromFileData, &jsonData); err != nil {
 		return nil, err
 	}
