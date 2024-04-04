@@ -51,7 +51,6 @@ func (serv *HStorage) SetJSONLongURL(w http.ResponseWriter, r *http.Request) {
 	}
 	if flag {
 		w.WriteHeader(http.StatusConflict)
-		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
