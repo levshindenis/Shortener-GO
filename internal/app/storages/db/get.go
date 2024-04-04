@@ -53,7 +53,7 @@ func (dbs *Database) GetData(value string, param string, userid string) (string,
 	var items []models.MSItem
 	for rows.Next() {
 		var item models.MSItem
-		if err = rows.Scan(&item.Key, &item.Value, &item.UserId, &item.Deleted); err != nil {
+		if err = rows.Scan(&item.Key, &item.Value, &item.UserID, &item.Deleted); err != nil {
 			return "", nil, err
 		}
 		items = append(items, item)

@@ -22,9 +22,9 @@ func (serv *HStorage) GetURLs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	myarr := strings.Split(mystr, "*")
-	var jo []models.JsonAllEncoder
+	var jo []models.JSONAllEncoder
 	for i := 0; i < len(myarr); i += 2 {
-		jo = append(jo, models.JsonAllEncoder{Key: serv.GetServerConfig("baseURL") + "/" + myarr[i],
+		jo = append(jo, models.JSONAllEncoder{Key: serv.GetServerConfig("baseURL") + "/" + myarr[i],
 			Value: myarr[i+1]})
 	}
 

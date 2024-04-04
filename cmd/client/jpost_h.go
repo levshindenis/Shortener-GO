@@ -15,7 +15,7 @@ import (
 func (s *Server) JPostH() {
 	var (
 		longURL  string
-		shortURL models.JsonEncoder
+		shortURL models.JSONEncoder
 		resp     *resty.Response
 		err      error
 	)
@@ -23,7 +23,7 @@ func (s *Server) JPostH() {
 	fmt.Println("Введите длинный URL:")
 	fmt.Scanf("%s\n", &longURL)
 
-	marsh, err := json.Marshal(models.JsonDecoder{LongURL: longURL})
+	marsh, err := json.Marshal(models.JSONDecoder{LongURL: longURL})
 	if err != nil {
 		panic(err)
 	}

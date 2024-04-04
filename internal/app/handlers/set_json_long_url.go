@@ -9,10 +9,10 @@ import (
 	"github.com/levshindenis/sprint1/internal/app/models"
 )
 
-func (serv *HStorage) SetJsonLongURL(w http.ResponseWriter, r *http.Request) {
+func (serv *HStorage) SetJSONLongURL(w http.ResponseWriter, r *http.Request) {
 	var (
-		enc  models.JsonEncoder
-		dec  models.JsonDecoder
+		enc  models.JSONEncoder
+		dec  models.JSONDecoder
 		buf  bytes.Buffer
 		flag bool
 		err  error

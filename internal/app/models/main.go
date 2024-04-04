@@ -8,7 +8,7 @@ type DeleteValue struct {
 type MSItem struct {
 	Key     string
 	Value   string
-	UserId  string
+	UserID  string
 	Deleted bool
 }
 
@@ -21,15 +21,15 @@ type BatchEncoder struct {
 	ShortURL string `json:"short_url"`
 }
 
-type JsonAllEncoder struct {
+type JSONAllEncoder struct {
 	Key   string `json:"short_url"`
 	Value string `json:"original_url"`
 }
 
-type JsonDecoder struct {
+type JSONDecoder struct {
 	LongURL string `json:"url"`
 }
-type JsonEncoder struct {
+type JSONEncoder struct {
 	ShortURL string `json:"result"`
 }
 

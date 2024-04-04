@@ -198,7 +198,7 @@ func TestHSStorage_SetJsonLongURL(t *testing.T) {
 			r.AddCookie(&http.Cookie{Name: "UserID", Value: tt.cookVal})
 			r.Header.Set("Content-Type", "application/json")
 			w := httptest.NewRecorder()
-			serv.SetJsonLongURL(w, r)
+			serv.SetJSONLongURL(w, r)
 			assert.Equal(t, w.Code, tt.expectedCode, "Код ответа не совпадает с ожидаемым")
 			if w.Code == 201 {
 				arr1 = append(arr1, strings.Split(w.Body.String(), "/")[3][:6])
@@ -335,14 +335,14 @@ func BenchmarkHSStorage_SetJsonLongURL(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		b.StopTimer()
 		reqBody := "https://yande" + strconv.Itoa(i+100) + "x.ru/"
-		marsh, _ := json.Marshal(models.JsonDecoder{LongURL: reqBody})
+		marsh, _ := json.Marshal(models.JSONDecoder{LongURL: reqBody})
 		r := httptest.NewRequest(http.MethodPost, "/api/shorten", bytes.NewReader(marsh))
 		r.AddCookie(&http.Cookie{Name: "UserID", Value: cookval})
 		r.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 		b.StartTimer()
 
-		serv.SetJsonLongURL(w, r)
+		serv.SetJSONLongURL(w, r)
 
 		b.StopTimer()
 		if w.Code == 201 {

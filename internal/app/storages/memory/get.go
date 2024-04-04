@@ -23,7 +23,7 @@ func (ms *Memory) GetData(value string, param string, userid string) (string, []
 		mystr := ""
 		var mybool []bool
 		for _, elem := range ms.Arr {
-			if elem.UserId == userid {
+			if elem.UserID == userid {
 				mystr += elem.Key + "*" + elem.Value + "*"
 				mybool = append(mybool, elem.Deleted)
 			}

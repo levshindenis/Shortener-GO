@@ -3,7 +3,6 @@ package router
 import (
 	"net/http"
 	"net/http/pprof"
-	_ "net/http/pprof"
 
 	"github.com/go-chi/chi/v5"
 
@@ -29,7 +28,7 @@ func MyRouter(hs *handlers.HStorage) *chi.Mux {
 		r.Method(http.MethodGet, "/debug/pprof/heap", pprof.Handler("heap"))
 
 		r.Route("/api", func(r chi.Router) {
-			r.Post("/shorten", middleware.WithCompression(ml.WithLogging(middleware.CheckCookie(hs.SetJsonLongURL, hs))))
+			r.Post("/shorten", middleware.WithCompression(ml.WithLogging(middleware.CheckCookie(hs.SetJSONLongURL, hs))))
 			r.Post("/shorten/batch", middleware.WithCompression(ml.WithLogging(middleware.CheckCookie(hs.BatchURLs, hs))))
 			r.Get("/user/urls", middleware.WithCompression(ml.WithLogging(middleware.CheckCookie(hs.GetURLs, hs))))
 			r.Delete("/user/urls", ml.WithLogging(middleware.CheckCookie(hs.DelURLs, hs)))
