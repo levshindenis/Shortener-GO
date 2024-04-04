@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/levshindenis/sprint1/internal/app/models"
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
@@ -17,6 +16,7 @@ import (
 
 	"github.com/levshindenis/sprint1/internal/app/config"
 	"github.com/levshindenis/sprint1/internal/app/handlers"
+	"github.com/levshindenis/sprint1/internal/app/models"
 )
 
 var (

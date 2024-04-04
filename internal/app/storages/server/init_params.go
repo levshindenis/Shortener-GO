@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+
 	"github.com/levshindenis/sprint1/internal/app/config"
 	"github.com/levshindenis/sprint1/internal/app/models"
 	"github.com/levshindenis/sprint1/internal/app/storages/cookie"

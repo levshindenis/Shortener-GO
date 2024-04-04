@@ -2,9 +2,9 @@ package file
 
 import (
 	"encoding/json"
-	"github.com/levshindenis/sprint1/internal/app/models"
 	"os"
 
+	"github.com/levshindenis/sprint1/internal/app/models"
 	"github.com/levshindenis/sprint1/internal/app/tools"
 )
 
