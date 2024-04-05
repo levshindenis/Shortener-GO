@@ -25,6 +25,7 @@ func GenerateShortKey() string {
 	return string(shortKey)
 }
 
+// GenerateCrypto - создает крипто-ключ
 func GenerateCrypto(size int) ([]byte, error) {
 	b := make([]byte, size)
 	_, err := rb.Read(b)

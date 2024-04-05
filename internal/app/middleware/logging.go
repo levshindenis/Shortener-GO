@@ -8,16 +8,19 @@ import (
 )
 
 type (
+	// responseData - хранит в себе статус и размер ответа на запрос
 	responseData struct {
 		status int
 		size   int
 	}
 
+	// loggingResponseWriter - структура для перезаписывания Writer
 	loggingResponseWriter struct {
 		http.ResponseWriter
 		responseData *responseData
 	}
 
+	// MyLogger - мой логгер
 	MyLogger struct {
 		loggerSugar zap.SugaredLogger
 	}
@@ -34,12 +37,14 @@ func (ml *MyLogger) Init() {
 	ml.loggerSugar = *logger.Sugar()
 }
 
+// Write - перезаписывает основной одноименный метод
 func (r *loggingResponseWriter) Write(b []byte) (int, error) {
 	size, err := r.ResponseWriter.Write(b)
 	r.responseData.size += size
 	return size, err
 }
 
+// WriteHeader - перезаписывает заголовок ответа
 func (r *loggingResponseWriter) WriteHeader(statusCode int) {
 	r.ResponseWriter.WriteHeader(statusCode)
 	r.responseData.status = statusCode

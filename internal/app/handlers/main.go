@@ -7,6 +7,7 @@ import (
 	"github.com/levshindenis/sprint1/internal/app/storages/server"
 )
 
+// HStorage - основная структура для хендлеров
 type HStorage struct {
 	server.Server
 }

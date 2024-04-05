@@ -7,11 +7,13 @@ import (
 	"strings"
 )
 
+// gzipWriter - основная структура для сжатия исходящих данных
 type gzipWriter struct {
 	http.ResponseWriter
 	Writer io.Writer
 }
 
+// Write - метод, который перезаписывает базовый Write
 func (w gzipWriter) Write(b []byte) (int, error) {
 	return w.Writer.Write(b)
 }

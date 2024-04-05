@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/levshindenis/sprint1/internal/app/config"
-	"github.com/levshindenis/sprint1/internal/app/models"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
 	"strings"
+
+	"github.com/levshindenis/sprint1/internal/app/config"
+	"github.com/levshindenis/sprint1/internal/app/models"
 )
 
 func ExampleHStorage_SetLongURL() {
