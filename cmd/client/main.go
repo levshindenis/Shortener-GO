@@ -1,3 +1,4 @@
+// Package client используется для отправки запросов со стороны клиента. Испульзуется finite state machine.
 package main
 
 import (
@@ -7,6 +8,7 @@ import (
 	"github.com/looplab/fsm"
 )
 
+// Server - основная структура для хранения значений сервера и клиента
 type Server struct {
 	client  *resty.Client
 	cookie  string
@@ -16,6 +18,7 @@ type Server struct {
 	f       *fsm.FSM
 }
 
+// NewServer - функция для создания нового Server
 func NewServer() *Server {
 	client := resty.New()
 	m := map[string]string{

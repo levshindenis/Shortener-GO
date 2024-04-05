@@ -5,6 +5,7 @@ import (
 	"fmt"
 )
 
+// SelectAction используется для выбора запроса.
 func (s *Server) SelectAction() {
 	fmt.Println("Cookie: ", s.cookie)
 	for {

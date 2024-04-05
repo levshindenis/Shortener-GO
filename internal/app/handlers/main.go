@@ -1,3 +1,4 @@
+// Package handlers используется для обработки запросов к серверу.
 package handlers
 
 import (

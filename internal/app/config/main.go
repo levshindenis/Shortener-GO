@@ -1,3 +1,4 @@
+// Package config нужен для сбора флагов и переменных окружения.
 package config
 
 import (
@@ -5,6 +6,7 @@ import (
 	"os"
 )
 
+// ServerConfig - структура для хранения флагов и переменных оркужения.
 type ServerConfig struct {
 	startAddress string
 	shortBaseURL string
@@ -12,38 +14,47 @@ type ServerConfig struct {
 	dbAddress    string
 }
 
+// GetStartAddress - возвращает адрес запуска HTTP-сервера.
 func (sa *ServerConfig) GetStartAddress() string {
 	return sa.startAddress
 }
 
+// GetShortBaseURL - возвращает базовый адрес результирующего сокращённого URL.
 func (sa *ServerConfig) GetShortBaseURL() string {
 	return sa.shortBaseURL
 }
 
+// GetFilePath - возвращает путь с именем файла, где хранятся данные.
 func (sa *ServerConfig) GetFilePath() string {
 	return sa.filePath
 }
 
+// GetDBAddress - возращает адрес БД.
 func (sa *ServerConfig) GetDBAddress() string {
 	return sa.dbAddress
 }
 
+// SetStartAddress - устанавливает значение value для startAddress.
 func (sa *ServerConfig) SetStartAddress(value string) {
 	sa.startAddress = value
 }
 
+// SetShortBaseURL - устанавливает значение value для shortBaseURL.
 func (sa *ServerConfig) SetShortBaseURL(value string) {
 	sa.shortBaseURL = value
 }
 
+// SetFilePath - устанавливает значение value для filePath.
 func (sa *ServerConfig) SetFilePath(value string) {
 	sa.filePath = value
 }
 
+// SetDBAddress - устанавливает значение value для dbAddress.
 func (sa *ServerConfig) SetDBAddress(value string) {
 	sa.dbAddress = value
 }
 
+// ParseFlags - берет значения из флагов или переменных окружения и устанавливает значения в структуру ServerConfig.
 func (sa *ServerConfig) ParseFlags() {
 	flag.StringVar(&sa.startAddress, "a", "localhost:8080", "address and port to run shortener")
 	flag.StringVar(&sa.shortBaseURL, "b", "http://localhost:8080", "address and port for base short URL")

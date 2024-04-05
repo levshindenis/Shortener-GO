@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// SetData - нужна для записи значений в БД.
 func (dbs *Database) SetData(key string, value string, userid string) error {
 	db, err := sql.Open("pgx", dbs.Address)
 	if err != nil {

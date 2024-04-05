@@ -8,6 +8,9 @@ import (
 	"github.com/go-resty/resty/v2"
 )
 
+// PostH используется для отправки запроса через хендлер SetLongURL.
+// Клиент вводит длинный URL, который ложится в request.Body для отправки запроса.
+// В ответ клиент получает короткий URL.
 func (s *Server) PostH() {
 	var (
 		longURL string

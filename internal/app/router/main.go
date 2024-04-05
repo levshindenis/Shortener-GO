@@ -1,3 +1,4 @@
+// Package router - здесь написан свой роутер для обработки запросов, поступающих от клиента.
 package router
 
 import (
@@ -10,15 +11,13 @@ import (
 	"github.com/levshindenis/sprint1/internal/app/middleware"
 )
 
+// MyRouter используется для обработки запросов, поступающих от клиента, через хендлеры.
 func MyRouter(hs *handlers.HStorage) *chi.Mux {
 	var ml middleware.MyLogger
 	ml.Init()
 
 	r := chi.NewRouter()
 	r.Route("/", func(r chi.Router) {
-		r.Post("/", middleware.WithCompression(ml.WithLogging(middleware.CheckCookie(hs.SetLongURL, hs))))
-		r.Get("/ping", middleware.WithCompression(ml.WithLogging(hs.Ping)))
-		r.Get("/{id}", middleware.WithCompression(ml.WithLogging(hs.GetLongURL)))
 		r.Get("/debug/pprof", pprof.Index)
 		r.Get("/debug/pprof/profile", pprof.Profile)
 		r.Get("/debug/pprof/cmdline", pprof.Cmdline)
@@ -27,6 +26,9 @@ func MyRouter(hs *handlers.HStorage) *chi.Mux {
 		r.Method(http.MethodGet, "/debug/pprof/block", pprof.Handler("block"))
 		r.Method(http.MethodGet, "/debug/pprof/heap", pprof.Handler("heap"))
 
+		r.Post("/", middleware.WithCompression(ml.WithLogging(middleware.CheckCookie(hs.SetLongURL, hs))))
+		r.Get("/ping", middleware.WithCompression(ml.WithLogging(hs.Ping)))
+		r.Get("/{id}", middleware.WithCompression(ml.WithLogging(hs.GetLongURL)))
 		r.Route("/api", func(r chi.Router) {
 			r.Post("/shorten", middleware.WithCompression(ml.WithLogging(middleware.CheckCookie(hs.SetJSONLongURL, hs))))
 			r.Post("/shorten/batch", middleware.WithCompression(ml.WithLogging(middleware.CheckCookie(hs.BatchURLs, hs))))

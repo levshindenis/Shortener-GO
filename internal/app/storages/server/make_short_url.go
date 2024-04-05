@@ -2,8 +2,9 @@ package server
 
 import "github.com/levshindenis/sprint1/internal/app/tools"
 
+// MakeShortURL используется для создания короткого URL.
 func (serv *Server) MakeShortURL(longURL string) (string, bool, error) {
-	value, _, err := serv.st.GetData(longURL, "Value", "")
+	value, _, err := serv.st.GetData(longURL, "value", "")
 	if err != nil {
 		return "", false, err
 	}

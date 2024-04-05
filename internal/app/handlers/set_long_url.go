@@ -8,6 +8,11 @@ import (
 	"github.com/levshindenis/sprint1/internal/app/tools"
 )
 
+// SetLongURL нужен для обработки запроса от клиента по адресу /.
+// Считывается длинный URL из request.Body.
+// Если такой URL уже сокращали, то устанавливается StatusConflict.
+// После этого создается короткий URL и возвращается клиенту.
+// При успешной обработке запроса устанавливается StatusCreated.
 func (serv *HStorage) SetLongURL(w http.ResponseWriter, r *http.Request) {
 	var (
 		body []byte
@@ -48,7 +53,7 @@ func (serv *HStorage) SetLongURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	address = serv.GetServerConfig("baseURL") + "/" + address
+	address = serv.GetServerConfig().GetShortBaseURL() + "/" + address
 	if _, err = w.Write([]byte(address)); err != nil {
 		http.Error(w, "Something bad with write address", http.StatusBadRequest)
 		return

@@ -8,6 +8,12 @@ import (
 	"github.com/levshindenis/sprint1/internal/app/models"
 )
 
+// BatchURLs - нужен для обработки запроса от клиента по адресу /api/shorten/batch.
+// Сначала проверяются входящие данные на JSON формат.
+// При успешной проверке длинные URL считываются из request.Body и преобразуются из формата JSON.
+// Создаются короткие URL и все данные (длинный URL, короткий URL, cookie) сохраняются.
+// Созданные короткие URL возвращаются клиенту в формате JSON.
+// При успешной обработке запроса устанавливается StatusCreated.
 func (serv *HStorage) BatchURLs(w http.ResponseWriter, r *http.Request) {
 	var (
 		enc []models.BatchEncoder
@@ -51,7 +57,7 @@ func (serv *HStorage) BatchURLs(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		short = serv.GetServerConfig("baseURL") + "/" + short
+		short = serv.GetServerConfig().GetShortBaseURL() + "/" + short
 		enc = append(enc, models.BatchEncoder{ID: elem.ID, ShortURL: short})
 	}
 

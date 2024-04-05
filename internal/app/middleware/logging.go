@@ -23,6 +23,7 @@ type (
 	}
 )
 
+// Init нужен для создания логгера
 func (ml *MyLogger) Init() {
 	logger, err := zap.NewDevelopment()
 	if err != nil {
@@ -44,6 +45,7 @@ func (r *loggingResponseWriter) WriteHeader(statusCode int) {
 	r.responseData.status = statusCode
 }
 
+// WithLogging - middleware для логирования поступающих запросов.
 func (ml *MyLogger) WithLogging(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()

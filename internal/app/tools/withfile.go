@@ -8,6 +8,7 @@ import (
 	"github.com/levshindenis/sprint1/internal/app/models"
 )
 
+// ReadFile используется для чтения данных из файла-хранилища.
 func ReadFile(filepath string) ([]models.JSONData, error) {
 	file, err := os.OpenFile(filepath, os.O_RDONLY, os.ModePerm)
 	if err != nil {

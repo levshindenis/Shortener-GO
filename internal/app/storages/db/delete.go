@@ -9,6 +9,11 @@ import (
 	"github.com/levshindenis/sprint1/internal/app/models"
 )
 
+// DeleteData нужа для "удаления" переданных сокращенных URL из БД.
+// Открывается БД.
+// В цикле берется каждый короткий URL и по нему сравнивается UserID из поступивших данных и значение из БД.
+// Если значения не совпадают, то удаление не происходит.
+// Если значения совпали, то меняется значение "deleted" на true.
 func (dbs *Database) DeleteData(delValues []models.DeleteValue) error {
 	db, err := sql.Open("pgx", dbs.Address)
 	if err != nil {

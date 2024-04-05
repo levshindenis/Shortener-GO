@@ -8,6 +8,11 @@ import (
 	"github.com/levshindenis/sprint1/internal/app/models"
 )
 
+// DelURLs нужен для обработки запроса от клиента по адресу /api/user/urls.
+// Сначала проверяются входящие данные на JSON формат.
+// При успешной проверке сокращенные URL из request.Body преобразуются из JSON.
+// Берется куки клиента и в паре с каждым полученным сокращенным URL отправляется в канал.
+// При успешной обработке запроса устанавливается StatusAccepted.
 func (serv *HStorage) DelURLs(w http.ResponseWriter, r *http.Request) {
 	var (
 		buf       bytes.Buffer

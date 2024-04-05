@@ -7,8 +7,11 @@ import (
 	"time"
 )
 
+// Ping нужен для обработки запроса от клиента по адресу /ping.
+// Хендлер проверяет, есть ли соединение с базой данных.
+// При отсутствии соединения возвращается StatusInternalServerError.
 func (serv *HStorage) Ping(w http.ResponseWriter, r *http.Request) {
-	db, err := sql.Open("pgx", serv.GetServerConfig("db"))
+	db, err := sql.Open("pgx", serv.GetServerConfig().GetDBAddress())
 	if err != nil {
 		http.Error(w, "Something bad with open db", http.StatusInternalServerError)
 		return

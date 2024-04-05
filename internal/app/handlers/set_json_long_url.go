@@ -9,6 +9,12 @@ import (
 	"github.com/levshindenis/sprint1/internal/app/models"
 )
 
+// SetJSONLongURL нужен для обработки запроса от клиента по адресу /api/shorten.
+// Сначала проверяются входящие данные на JSON формат.
+// Если проверка пройдена, то считывается длинный URL из request.Body и преобразуется из формата JSON.
+// Если такой URL уже сокращали, то устанавливается StatusConflict.
+// После этого создается короткий URL, переводится в JSON формат и возвращается клиенту.
+// При успешной обработке запроса устанавливается StatusCreated.
 func (serv *HStorage) SetJSONLongURL(w http.ResponseWriter, r *http.Request) {
 	var (
 		enc  models.JSONEncoder
@@ -59,7 +65,7 @@ func (serv *HStorage) SetJSONLongURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	enc.ShortURL = serv.GetServerConfig("baseURL") + "/" + enc.ShortURL
+	enc.ShortURL = serv.GetServerConfig().GetShortBaseURL() + "/" + enc.ShortURL
 
 	resp, err := json.Marshal(enc)
 	if err != nil {

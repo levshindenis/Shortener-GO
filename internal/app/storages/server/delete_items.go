@@ -7,6 +7,9 @@ import (
 	"github.com/levshindenis/sprint1/internal/app/models"
 )
 
+// DeleteItems - горутина, которая берет поступившие данные из канала и записывает их в массив values.
+// Каждый тик таймера все данные из values идут на вход функции DeleteData (удаление данных).
+// Если при тике массив пустой, то ничего не происходит.
 func (serv *Server) DeleteItems(ctx context.Context) {
 	ticker := time.NewTicker(2 * time.Second)
 

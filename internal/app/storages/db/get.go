@@ -9,6 +9,11 @@ import (
 	"github.com/levshindenis/sprint1/internal/app/models"
 )
 
+// GetData - нужна для получение каких-либо данных из БД.
+// Открывается БД.
+// Если param == key, то будет возвращен длинный URL и параметр deleted.
+// Если param == value, то будет возвращен короткий URL и параметр deleted.
+// Если param == all, то будут возвращены все записи по полученному UserID.
 func (dbs *Database) GetData(value string, param string, userid string) (string, []bool, error) {
 	db, err := sql.Open("pgx", dbs.Address)
 	if err != nil {
@@ -24,7 +29,7 @@ func (dbs *Database) GetData(value string, param string, userid string) (string,
 
 	if param == "key" {
 		row = db.QueryRowContext(ctx, `SELECT long_url, deleted FROM shortener WHERE short_url = $1`, value)
-	} else if param == "Value" {
+	} else if param == "value" {
 		row = db.QueryRowContext(ctx, `SELECT short_url, deleted FROM shortener WHERE long_url = $1`, value)
 	} else if param == "all" {
 		rows, err = db.QueryContext(ctx, `SELECT * FROM shortener WHERE user_id = $1`, userid)

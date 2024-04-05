@@ -12,6 +12,9 @@ import (
 	"github.com/levshindenis/sprint1/internal/app/models"
 )
 
+// JPostH используется для отправки запроса через хендлер SetJSONLongURL.
+// Клиент вводит длинный URL, который ложится в request.Body в формате JSON для отправки запроса.
+// В ответ клиент получает короткий URL.
 func (s *Server) JPostH() {
 	var (
 		longURL  string

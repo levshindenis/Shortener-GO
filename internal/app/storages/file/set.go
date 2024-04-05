@@ -8,6 +8,11 @@ import (
 	"github.com/levshindenis/sprint1/internal/app/tools"
 )
 
+// SetData - нужна для записи значений в файл-хранилище.
+// Сначала берутся данные из файла.
+// После этого файл отрывается с параметрами очистки (файл становится пустым).
+// В jsonData записываются полученные значения.
+// В файл в формате JSON записываются данные из jsobData.
 func (fs *File) SetData(key string, value string, userid string) error {
 	jsonData, err := tools.ReadFile(fs.Path)
 	if err != nil {

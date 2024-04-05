@@ -8,6 +8,8 @@ import (
 	"github.com/go-resty/resty/v2"
 )
 
+// GetAllH используется для отправки запроса через хендлер GetURLs.
+// В ответ клиент получает все свои сокращенные URL.
 func (s *Server) GetAllH() {
 	var (
 		resp *resty.Response

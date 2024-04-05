@@ -8,6 +8,10 @@ import (
 	"github.com/levshindenis/sprint1/internal/app/models"
 )
 
+// GetURLs нужен для обработки запроса от клиента по адресу /api/user/urls.
+// Берется куки клиента и из хранилища достаются все сокращенные URL этого клиента.
+// Если клиент не сократил ни одного URL, то возвращается StatusNoContent.
+// Если сокращенные URL есть, то данные преобращуются в JSON и возвращаются клиенту.
 func (serv *HStorage) GetURLs(w http.ResponseWriter, r *http.Request) {
 	cookie, _ := r.Cookie("UserID")
 
@@ -24,7 +28,7 @@ func (serv *HStorage) GetURLs(w http.ResponseWriter, r *http.Request) {
 	myarr := strings.Split(mystr, "*")
 	var jo []models.JSONAllEncoder
 	for i := 0; i < len(myarr); i += 2 {
-		jo = append(jo, models.JSONAllEncoder{Key: serv.GetServerConfig("baseURL") + "/" + myarr[i],
+		jo = append(jo, models.JSONAllEncoder{Key: serv.GetServerConfig().GetShortBaseURL() + "/" + myarr[i],
 			Value: myarr[i+1]})
 	}
 

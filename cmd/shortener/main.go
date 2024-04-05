@@ -1,3 +1,4 @@
+// Package shortener - основной пакет
 package main
 
 import (

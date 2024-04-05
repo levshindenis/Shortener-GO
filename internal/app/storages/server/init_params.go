@@ -11,6 +11,7 @@ import (
 	"github.com/levshindenis/sprint1/internal/app/storages/memory"
 )
 
+// Init используется для инициализации переменных хранилища.
 func (serv *Server) Init(conf config.ServerConfig) {
 	serv.sc = conf
 	serv.cs = cookie.UserCookie{Arr: make([]string, 0)}
@@ -20,28 +21,32 @@ func (serv *Server) Init(conf config.ServerConfig) {
 	go serv.DeleteItems(serv.ctx)
 }
 
+// InitStorage используется для выбора хранилища в зависимости от аргументов командной строки.
 func (serv *Server) InitStorage() {
-	if serv.GetServerConfig("db") != "" {
+	if serv.GetServerConfig().GetDBAddress() != "" {
 		serv.InitDB()
-	} else if serv.GetServerConfig("file") != "" {
+	} else if serv.GetServerConfig().GetFilePath() != "" {
 		serv.InitFile()
 	} else {
 		serv.InitMemory()
 	}
 }
 
+// InitDB используется для определения БД как основного хранилища и создания БД.
 func (serv *Server) InitDB() {
-	dbs := db.Database{Address: serv.GetServerConfig("db")}
+	dbs := db.Database{Address: serv.GetServerConfig().GetDBAddress()}
 	dbs.MakeDB()
 	serv.st = &dbs
 }
 
+// InitFile используется для определения файла как основного хранилища и создания файла-хранилища.
 func (serv *Server) InitFile() {
-	fl := file.File{Path: serv.GetServerConfig("file")}
+	fl := file.File{Path: serv.GetServerConfig().GetFilePath()}
 	fl.MakeFile()
 	serv.st = &fl
 }
 
+// InitMemory используется для определения памяти как основного хранилища.
 func (serv *Server) InitMemory() {
 	mem := memory.Memory{Arr: []models.MSItem{}}
 	serv.st = &mem

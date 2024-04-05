@@ -6,6 +6,11 @@ import (
 	"github.com/levshindenis/sprint1/internal/app/tools"
 )
 
+// GetData - нужна для получение каких-либо данных из файла-хранилища.
+// Берутся данные из файла-хранилища.
+// Если param == key, то будет возвращен длинный URL и параметр deleted.
+// Если param == value, то будет возвращен короткий URL и параметр deleted.
+// Если param == all, то будут возвращены все записи по полученному UserID.
 func (fs *File) GetData(value string, param string, userid string) (string, []bool, error) {
 	jsonData, err := tools.ReadFile(fs.Path)
 	if err != nil {
@@ -20,7 +25,7 @@ func (fs *File) GetData(value string, param string, userid string) (string, []bo
 		}
 		return "", nil, nil
 	}
-	if param == "Value" {
+	if param == "value" {
 		for _, elem := range jsonData {
 			if elem.Value == value {
 				return elem.Key, []bool{elem.Deleted}, nil

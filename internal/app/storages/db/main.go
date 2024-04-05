@@ -1,3 +1,4 @@
+// Package db нужен для работы с БД, когда БД выбрана хранилищем.
 package db
 
 import (
@@ -6,10 +7,13 @@ import (
 	"time"
 )
 
+// Database - структура для работы с БД.
+// Address - поле, которое хранит адрес подключения к БД.
 type Database struct {
 	Address string
 }
 
+// MakeDB - создает таблицу "shortener" по адресу.
 func (dbs *Database) MakeDB() {
 	db, err := sql.Open("pgx", dbs.Address)
 	if err != nil {
