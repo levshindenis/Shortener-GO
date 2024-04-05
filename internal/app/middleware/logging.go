@@ -7,24 +7,22 @@ import (
 	"go.uber.org/zap"
 )
 
-type (
-	// responseData - хранит в себе статус и размер ответа на запрос
-	responseData struct {
-		status int
-		size   int
-	}
+// responseData - хранит в себе статус и размер ответа на запрос
+type responseData struct {
+	status int
+	size   int
+}
 
-	// loggingResponseWriter - структура для перезаписывания Writer
-	loggingResponseWriter struct {
-		http.ResponseWriter
-		responseData *responseData
-	}
+// loggingResponseWriter - структура для перезаписывания Writer
+type loggingResponseWriter struct {
+	http.ResponseWriter
+	responseData *responseData
+}
 
-	// MyLogger - мой логгер
-	MyLogger struct {
-		loggerSugar zap.SugaredLogger
-	}
-)
+// MyLogger - мой логгер
+type MyLogger struct {
+	loggerSugar zap.SugaredLogger
+}
 
 // Init нужен для создания логгера
 func (ml *MyLogger) Init() {
