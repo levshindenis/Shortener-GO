@@ -56,6 +56,7 @@ func (serv *Server) GetServerConfig() *config.ServerConfig {
 	return &serv.sc
 }
 
+// GetDB возвращает ссылку на БД-хранилище
 func (serv *Server) GetDB() *sql.DB {
 	return serv.db
 }

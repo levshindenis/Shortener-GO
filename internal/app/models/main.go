@@ -21,6 +21,7 @@ type BatchDecoder struct {
 	LongURL string `json:"original_url"`
 }
 
+// BatchDecoderArray - массив BatchDecoder
 type BatchDecoderArray struct {
 	Items []BatchDecoder
 }
@@ -31,6 +32,7 @@ type BatchEncoder struct {
 	ShortURL string `json:"short_url"`
 }
 
+// BatchEncoderArray - массив BatchEncoder
 type BatchEncoderArray struct {
 	Items []BatchEncoder
 }
