@@ -51,7 +51,7 @@ func (serv *HStorage) BatchURLs(w http.ResponseWriter, r *http.Request) {
 
 		if !flag {
 			if err = serv.GetStorage().SetData(short, dec[ind].LongURL, cookie.Value); err != nil {
-				http.Error(w, "Something bad with Save", http.StatusBadRequest)
+				http.Error(w, "Somethings bad with Save", http.StatusBadRequest)
 				return
 			}
 		}
