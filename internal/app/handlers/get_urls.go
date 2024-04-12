@@ -27,10 +27,12 @@ func (serv *HStorage) GetURLs(w http.ResponseWriter, r *http.Request) {
 
 	myarr := strings.Split(mystr[:len(mystr)-1], "*")
 
-	jo := make([]models.JSONAllEncoder, len(myarr))
+	jo := make([]models.JSONAllEncoder, len(myarr)/2)
 	for i := 0; i < len(myarr); i += 2 {
+
 		jo[i/2] = models.JSONAllEncoder{Key: serv.GetServerConfig().GetShortBaseURL() + "/" + myarr[i],
 			Value: myarr[i+1]}
+
 	}
 
 	w.Header().Set("Content-Type", "application/json")
