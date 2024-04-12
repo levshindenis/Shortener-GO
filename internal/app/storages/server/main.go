@@ -3,6 +3,7 @@ package server
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/levshindenis/sprint1/internal/app/config"
 	"github.com/levshindenis/sprint1/internal/app/models"
@@ -21,6 +22,7 @@ type Server struct {
 	sc     config.ServerConfig
 	cs     cookie.UserCookie
 	st     IStorage
+	db     *sql.DB
 	ch     chan models.DeleteValue
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -41,12 +43,19 @@ func (serv *Server) SetChan(delValue models.DeleteValue) {
 	serv.ch <- delValue
 }
 
-// CancelCh используется при завершении программы для завершения горутины и закрытия канала.
-func (serv *Server) CancelCh() {
+// Cancel используется при завершении программы для завершения горутины и закрытия канала.
+func (serv *Server) Cancel() {
+	if serv.db != nil {
+		serv.db.Close()
+	}
 	serv.cancel()
 }
 
 // GetServerConfig возвращает указатель на хранилище конфигураций системы.
 func (serv *Server) GetServerConfig() *config.ServerConfig {
 	return &serv.sc
+}
+
+func (serv *Server) GetDB() *sql.DB {
+	return serv.db
 }

@@ -57,12 +57,12 @@ func (serv *HStorage) SetJSONLongURL(w http.ResponseWriter, r *http.Request) {
 	}
 	if flag {
 		w.WriteHeader(http.StatusConflict)
-	}
-
-	w.WriteHeader(http.StatusCreated)
-	if err = serv.GetStorage().SetData(enc.ShortURL, dec.LongURL, cookie.Value); err != nil {
-		http.Error(w, "Something bad with Save", http.StatusBadRequest)
-		return
+	} else {
+		w.WriteHeader(http.StatusCreated)
+		if err = serv.GetStorage().SetData(enc.ShortURL, dec.LongURL, cookie.Value); err != nil {
+			http.Error(w, "Something bad with Save", http.StatusBadRequest)
+			return
+		}
 	}
 
 	enc.ShortURL = serv.GetServerConfig().GetShortBaseURL() + "/" + enc.ShortURL

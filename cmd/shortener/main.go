@@ -22,5 +22,5 @@ func main() {
 		panic(err)
 	}
 
-	server.CancelCh()
+	server.Cancel()
 }

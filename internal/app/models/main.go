@@ -21,10 +21,18 @@ type BatchDecoder struct {
 	LongURL string `json:"original_url"`
 }
 
+type BatchDecoderArray struct {
+	Items []BatchDecoder
+}
+
 // BatchEncoder - структура для получаемых данных в хендлере BatchURLs.
 type BatchEncoder struct {
 	ID       string `json:"correlation_id"`
 	ShortURL string `json:"short_url"`
+}
+
+type BatchEncoderArray struct {
+	Items []BatchEncoder
 }
 
 // JSONAllEncoder - структура для возвращаемых данных из хендлера GetURLs.

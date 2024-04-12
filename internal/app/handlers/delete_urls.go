@@ -38,8 +38,8 @@ func (serv *HStorage) DelURLs(w http.ResponseWriter, r *http.Request) {
 
 	cookie, _ := r.Cookie("UserID")
 
-	for _, elem := range shortURLS {
-		serv.SetChan(models.DeleteValue{Value: elem, Userid: cookie.Value})
+	for ind := range shortURLS {
+		serv.SetChan(models.DeleteValue{Value: shortURLS[ind], Userid: cookie.Value})
 	}
 
 	w.WriteHeader(http.StatusAccepted)

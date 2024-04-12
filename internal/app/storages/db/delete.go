@@ -15,36 +15,30 @@ import (
 // Если значения не совпадают, то удаление не происходит.
 // Если значения совпали, то меняется значение "deleted" на true.
 func (dbs *Database) DeleteData(delValues []models.DeleteValue) error {
-	db, err := sql.Open("pgx", dbs.Address)
-	if err != nil {
-		return err
-	}
-	defer db.Close()
+	var result string
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	tx, err := db.Begin()
+	tx, err := dbs.DB.Begin()
 	if err != nil {
 		return err
 	}
 
-	for _, elem := range delValues {
-		row := db.QueryRowContext(ctx, `SELECT user_id FROM shortener WHERE short_url = $1`, elem.Value)
-		var result string
+	for ind := range delValues {
+		row := dbs.DB.QueryRowContext(ctx, `SELECT user_id FROM shortener WHERE short_url = $1`, delValues[ind].Value)
 		err = row.Scan(&result)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
 				continue
-			} else {
-				return err
 			}
+			return err
 		}
-		if result != elem.Userid {
+		if result != delValues[ind].Userid {
 			continue
 		}
 		_, err = tx.ExecContext(ctx,
-			`UPDATE shortener SET deleted = $1 WHERE short_url = $2`, true, elem.Value)
+			`UPDATE shortener SET deleted = $1 WHERE short_url = $2`, true, delValues[ind].Value)
 		if err != nil {
 			tx.Rollback()
 			return err

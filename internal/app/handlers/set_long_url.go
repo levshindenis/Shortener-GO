@@ -45,12 +45,12 @@ func (serv *HStorage) SetLongURL(w http.ResponseWriter, r *http.Request) {
 
 	if flag {
 		w.WriteHeader(http.StatusConflict)
-	}
-
-	w.WriteHeader(http.StatusCreated)
-	if err = serv.GetStorage().SetData(address, string(body), cookie.Value); err != nil {
-		http.Error(w, "Something bad with Save", http.StatusBadRequest)
-		return
+	} else {
+		w.WriteHeader(http.StatusCreated)
+		if err = serv.GetStorage().SetData(address, string(body), cookie.Value); err != nil {
+			http.Error(w, "Something bad with Save", http.StatusBadRequest)
+			return
+		}
 	}
 
 	address = serv.GetServerConfig().GetShortBaseURL() + "/" + address

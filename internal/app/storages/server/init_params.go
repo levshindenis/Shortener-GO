@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/levshindenis/sprint1/internal/app/config"
 	"github.com/levshindenis/sprint1/internal/app/models"
@@ -34,7 +35,13 @@ func (serv *Server) InitStorage() {
 
 // InitDB используется для определения БД как основного хранилища и создания БД.
 func (serv *Server) InitDB() {
-	dbs := db.Database{Address: serv.GetServerConfig().GetDBAddress()}
+	newDB, err := sql.Open("pgx", serv.GetServerConfig().GetDBAddress())
+	if err != nil {
+		panic(err)
+	}
+	serv.db = newDB
+
+	dbs := db.Database{DB: newDB}
 	dbs.MakeDB()
 	serv.st = &dbs
 }

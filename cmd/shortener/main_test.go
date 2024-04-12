@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/levshindenis/sprint1/internal/app/models"
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
@@ -16,7 +17,6 @@ import (
 
 	"github.com/levshindenis/sprint1/internal/app/config"
 	"github.com/levshindenis/sprint1/internal/app/handlers"
-	"github.com/levshindenis/sprint1/internal/app/models"
 )
 
 var (
@@ -30,10 +30,11 @@ var (
 func TestMain(m *testing.M) {
 	cookieArr = []string{"abcdefg", "zxcvbn", "spotifyLU", "spotifyJLU", "spotifyBLU", "aaaaaa"}
 
-	conf.SetStartAddress("localhost:8080")
-	conf.SetShortBaseURL("http://localhost:8080")
-	conf.SetDBAddress("")
-	conf.SetFilePath("")
+	//conf.SetStartAddress("localhost:8080")
+	//conf.SetShortBaseURL("http://localhost:8080")
+	//conf.SetDBAddress("")
+	//conf.SetFilePath("")
+	conf.ParseFlags()
 
 	serv.Init(conf)
 

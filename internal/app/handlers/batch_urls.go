@@ -3,9 +3,8 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
-	"net/http"
-
 	"github.com/levshindenis/sprint1/internal/app/models"
+	"net/http"
 )
 
 // BatchURLs - нужен для обработки запроса от клиента по адресу /api/shorten/batch.
@@ -16,7 +15,6 @@ import (
 // При успешной обработке запроса устанавливается StatusCreated.
 func (serv *HStorage) BatchURLs(w http.ResponseWriter, r *http.Request) {
 	var (
-		enc []models.BatchEncoder
 		dec []models.BatchDecoder
 		buf bytes.Buffer
 	)
@@ -43,22 +41,23 @@ func (serv *HStorage) BatchURLs(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 
-	for _, elem := range dec {
-		short, flag, err := serv.MakeShortURL(elem.LongURL)
+	enc := make([]models.BatchEncoder, len(dec))
+	for ind := range dec {
+		short, flag, err := serv.MakeShortURL(dec[ind].LongURL)
 		if err != nil {
 			http.Error(w, "Something bad with MakeShortURL", http.StatusBadRequest)
 			return
 		}
 
 		if !flag {
-			if err = serv.GetStorage().SetData(short, elem.LongURL, cookie.Value); err != nil {
+			if err = serv.GetStorage().SetData(short, dec[ind].LongURL, cookie.Value); err != nil {
 				http.Error(w, "Something bad with Save", http.StatusBadRequest)
 				return
 			}
 		}
 
 		short = serv.GetServerConfig().GetShortBaseURL() + "/" + short
-		enc = append(enc, models.BatchEncoder{ID: elem.ID, ShortURL: short})
+		enc[ind] = models.BatchEncoder{ID: dec[ind].ID, ShortURL: short}
 	}
 
 	resp, err := json.Marshal(enc)

@@ -10,21 +10,15 @@ import (
 // Database - структура для работы с БД.
 // Address - поле, которое хранит адрес подключения к БД.
 type Database struct {
-	Address string
+	DB *sql.DB
 }
 
 // MakeDB - создает таблицу "shortener" по адресу.
 func (dbs *Database) MakeDB() {
-	db, err := sql.Open("pgx", dbs.Address)
-	if err != nil {
-		panic(err)
-	}
-	defer db.Close()
-
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	_, err = db.ExecContext(ctx,
+	_, err := dbs.DB.ExecContext(ctx,
 		`CREATE TABLE IF NOT EXISTS shortener(short_url text, long_url text, user_id text, deleted boolean)`)
 	if err != nil {
 		panic(err)
