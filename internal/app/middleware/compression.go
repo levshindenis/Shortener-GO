@@ -7,15 +7,21 @@ import (
 	"strings"
 )
 
+// gzipWriter - основная структура для сжатия исходящих данных
 type gzipWriter struct {
 	http.ResponseWriter
 	Writer io.Writer
 }
 
+// Write - метод, который перезаписывает базовый Write
 func (w gzipWriter) Write(b []byte) (int, error) {
 	return w.Writer.Write(b)
 }
 
+// WithCompression - middleware для сжатия данных, передаваемых клиенту.
+// Сначала проверяется, есть ли в заголовке gzip.
+// Если нет, то запрос передается дальше.
+// Если есть, то переписывается ResponseWriter на сжатие данных.
 func WithCompression(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") ||

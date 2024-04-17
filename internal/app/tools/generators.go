@@ -1,3 +1,4 @@
+// Package tools - пакет с дополнительными функциями
 package tools
 
 import (
@@ -10,6 +11,7 @@ import (
 	"time"
 )
 
+// GenerateShortKey создает короткий URL.
 func GenerateShortKey() string {
 	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	const keyLength = 6
@@ -23,6 +25,7 @@ func GenerateShortKey() string {
 	return string(shortKey)
 }
 
+// GenerateCrypto - создает крипто-ключ
 func GenerateCrypto(size int) ([]byte, error) {
 	b := make([]byte, size)
 	_, err := rb.Read(b)
@@ -33,6 +36,7 @@ func GenerateCrypto(size int) ([]byte, error) {
 	return b, nil
 }
 
+// GenerateCookie создает куки пользователя.
 func GenerateCookie(value int) (string, error) {
 	key, err := GenerateCrypto(aes.BlockSize)
 	if err != nil {

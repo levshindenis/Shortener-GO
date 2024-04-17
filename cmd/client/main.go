@@ -1,88 +1,74 @@
+// Package client используется для отправки запросов со стороны клиента. Испульзуется finite state machine.
 package main
 
 import (
-	"bufio"
-	"fmt"
-	"os"
-	"strings"
+	"context"
 
 	"github.com/go-resty/resty/v2"
+	"github.com/looplab/fsm"
 )
 
+// Server - основная структура для хранения значений сервера и клиента
+type Server struct {
+	client  *resty.Client
+	cookie  string
+	address string
+	choice  string
+	m       map[string]string
+	f       *fsm.FSM
+}
+
+// NewServer - функция для создания нового Server
+func NewServer() *Server {
+	client := resty.New()
+	m := map[string]string{
+		"1": "post",
+		"2": "get",
+		"3": "ping",
+		"4": "jPost",
+		"5": "bPost",
+		"6": "getAll",
+		"7": "del",
+	}
+	return &Server{
+		client:  client,
+		cookie:  "",
+		address: "http://localhost:8080/",
+		choice:  "",
+		m:       m,
+	}
+}
+
 func main() {
-	for {
-		fmt.Println("Выберите действие:")
-		fmt.Println("1) Ввести длинный URL")
-		fmt.Println("2) Ввести короткий URL")
-		fmt.Println("======================")
-		fmt.Print("Ввод: ")
+	server := NewServer()
+	server.f = fsm.NewFSM(
+		"zero",
+		fsm.Events{
+			{Name: "go", Src: []string{"zero"}, Dst: "main"},
+			{Name: "post", Src: []string{"main"}, Dst: "postH"},
+			{Name: "get", Src: []string{"main"}, Dst: "getH"},
+			{Name: "ping", Src: []string{"main"}, Dst: "pingH"},
+			{Name: "jPost", Src: []string{"main"}, Dst: "jPostH"},
+			{Name: "bPost", Src: []string{"main"}, Dst: "bPostH"},
+			{Name: "getAll", Src: []string{"main"}, Dst: "getAllH"},
+			{Name: "del", Src: []string{"main"}, Dst: "delH"},
+			{Name: "mainpage",
+				Src: []string{"postH", "getH", "pingH", "jPostH", "bPostH", "getAllH", "delH"},
+				Dst: "main"},
+		},
+		fsm.Callbacks{
+			"main":    func(_ context.Context, _ *fsm.Event) { server.SelectAction() },
+			"post":    func(_ context.Context, _ *fsm.Event) { server.PostH() },
+			"get":     func(_ context.Context, _ *fsm.Event) { server.GetH() },
+			"ping":    func(_ context.Context, _ *fsm.Event) { server.PingH() },
+			"jPost":   func(_ context.Context, _ *fsm.Event) { server.JPostH() },
+			"bPostH":  func(_ context.Context, _ *fsm.Event) { server.BPostH() },
+			"getAllH": func(_ context.Context, _ *fsm.Event) { server.GetAllH() },
+			"delH":    func(_ context.Context, _ *fsm.Event) { server.DelH() },
+		},
+	)
 
-		reader := bufio.NewReader(os.Stdin)
-		choice, err := reader.ReadString('\n')
-		if err != nil {
-			panic(err)
-		}
-		choice = strings.TrimSuffix(choice, "\n")
-
-		switch choice {
-		case "1":
-			fmt.Println("\nВведите длинный URL: ")
-		case "2":
-			fmt.Println("\nВведите короткий URL: ")
-		default:
-			os.Exit(1)
-		}
-
-		value, err := reader.ReadString('\n')
-		if err != nil {
-			panic(err)
-		}
-		value = strings.TrimSuffix(value, "\n")
-		fmt.Println("\nОтвет:")
-		client := resty.New()
-
-		switch choice {
-		case "1":
-			resp, err := client.R().SetBody(value).Post("http://localhost:8080/")
-			if err != nil {
-				panic(err)
-			}
-			fmt.Println(resp)
-		case "2":
-			myURL := "http://localhost:8080/" + value
-			resp, err := client.R().Get(myURL)
-			if err != nil {
-				fmt.Println("Err")
-				fmt.Println(strings.Split(err.Error(), "\"")[1])
-			} else {
-				if resp.RawResponse.Request.Referer() == myURL {
-					fmt.Println("NN Referer")
-					fmt.Println(resp.RawResponse.Request.URL)
-				} else if resp.RawResponse.Request.Referer() != "" {
-					fmt.Println("N Referer")
-					fmt.Println(resp.RawResponse.Request.Referer())
-				} else {
-					fmt.Println("Невозможно преобразовать короткий URL")
-				}
-			}
-		}
-
-		fmt.Println("\nПродолжить?")
-		fmt.Println("1) Да")
-		fmt.Println("2) Нет")
-		fmt.Println("===========")
-		fmt.Print("Ответ: ")
-
-		choice, err = reader.ReadString('\n')
-		if err != nil {
-			panic(err)
-		}
-		choice = strings.TrimSuffix(choice, "\n")
-
-		switch choice {
-		case "1":
-		default:
-			os.Exit(0)
-		}
+	if err := server.f.Event(context.Background(), "go"); err != nil {
+		panic(err)
 	}
 }

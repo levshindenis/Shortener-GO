@@ -7,22 +7,24 @@ import (
 	"go.uber.org/zap"
 )
 
-type (
-	responseData struct {
-		status int
-		size   int
-	}
+// responseData - хранит в себе статус и размер ответа на запрос
+type responseData struct {
+	status int
+	size   int
+}
 
-	loggingResponseWriter struct {
-		http.ResponseWriter
-		responseData *responseData
-	}
+// loggingResponseWriter - структура для перезаписывания Writer
+type loggingResponseWriter struct {
+	http.ResponseWriter
+	responseData *responseData
+}
 
-	MyLogger struct {
-		loggerSugar zap.SugaredLogger
-	}
-)
+// MyLogger - мой логгер
+type MyLogger struct {
+	loggerSugar zap.SugaredLogger
+}
 
+// Init нужен для создания логгера
 func (ml *MyLogger) Init() {
 	logger, err := zap.NewDevelopment()
 	if err != nil {
@@ -33,17 +35,20 @@ func (ml *MyLogger) Init() {
 	ml.loggerSugar = *logger.Sugar()
 }
 
+// Write - перезаписывает основной одноименный метод
 func (r *loggingResponseWriter) Write(b []byte) (int, error) {
 	size, err := r.ResponseWriter.Write(b)
 	r.responseData.size += size
 	return size, err
 }
 
+// WriteHeader - перезаписывает заголовок ответа
 func (r *loggingResponseWriter) WriteHeader(statusCode int) {
 	r.ResponseWriter.WriteHeader(statusCode)
 	r.responseData.status = statusCode
 }
 
+// WithLogging - middleware для логирования поступающих запросов.
 func (ml *MyLogger) WithLogging(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
