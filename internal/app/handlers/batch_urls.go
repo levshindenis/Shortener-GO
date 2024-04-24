@@ -3,8 +3,9 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/levshindenis/sprint1/internal/app/models"
 	"net/http"
+
+	"github.com/levshindenis/sprint1/internal/app/models"
 )
 
 // BatchURLs - нужен для обработки запроса от клиента по адресу /api/shorten/batch.
