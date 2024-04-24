@@ -12,6 +12,7 @@ type ServerConfig struct {
 	shortBaseURL string
 	filePath     string
 	dbAddress    string
+	https        string
 }
 
 // GetStartAddress - возвращает адрес запуска HTTP-сервера.
@@ -34,6 +35,11 @@ func (sa *ServerConfig) GetDBAddress() string {
 	return sa.dbAddress
 }
 
+// GetHttps - Возвращает TLS
+func (sa *ServerConfig) GetHttps() string {
+	return sa.https
+}
+
 // SetStartAddress - устанавливает значение value для startAddress.
 func (sa *ServerConfig) SetStartAddress(value string) {
 	sa.startAddress = value
@@ -54,12 +60,18 @@ func (sa *ServerConfig) SetDBAddress(value string) {
 	sa.dbAddress = value
 }
 
+// SetHttps - устанавливает значение value для https.
+func (sa *ServerConfig) SetHttps(value string) {
+	sa.https = value
+}
+
 // ParseFlags - берет значения из флагов или переменных окружения и устанавливает значения в структуру ServerConfig.
 func (sa *ServerConfig) ParseFlags() {
 	flag.StringVar(&sa.startAddress, "a", "localhost:8080", "address and port to run shortener")
 	flag.StringVar(&sa.shortBaseURL, "b", "http://localhost:8080", "address and port for base short URL")
 	flag.StringVar(&sa.filePath, "f", "/tmp/short-url-db.json", "storage file path")
 	flag.StringVar(&sa.dbAddress, "d", "", "db address")
+	flag.StringVar(&sa.dbAddress, "s", "", "tls")
 
 	flag.Parse()
 
@@ -77,5 +89,9 @@ func (sa *ServerConfig) ParseFlags() {
 
 	if envDBAddress, in := os.LookupEnv("DATABASE_DSN"); in {
 		sa.SetDBAddress(envDBAddress)
+	}
+
+	if envHttps, in := os.LookupEnv("ENABLE_HTTPS"); in {
+		sa.SetHttps(envHttps)
 	}
 }

@@ -26,6 +26,9 @@ func main() {
 	fmt.Printf("Build version: %s\nBuild date: %s\nBuild commit: %s\n", buildVersion, buildDate, buildCommit)
 
 	conf.ParseFlags()
+	if conf.GetHttps() != "" {
+		fmt.Println("TLS:  ", conf.GetHttps())
+	}
 	server.Init(conf)
 	if err := http.ListenAndServe(conf.GetStartAddress(), router.MyRouter(&server)); err != nil {
 		panic(err)
