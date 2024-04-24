@@ -35,8 +35,8 @@ func (sa *ServerConfig) GetDBAddress() string {
 	return sa.dbAddress
 }
 
-// GetHttps - Возвращает TLS
-func (sa *ServerConfig) GetHttps() string {
+// GetHTTPS - Возвращает TLS
+func (sa *ServerConfig) GetHTTPS() string {
 	return sa.https
 }
 
@@ -60,8 +60,8 @@ func (sa *ServerConfig) SetDBAddress(value string) {
 	sa.dbAddress = value
 }
 
-// SetHttps - устанавливает значение value для https.
-func (sa *ServerConfig) SetHttps(value string) {
+// SetHTTPS - устанавливает значение value для https.
+func (sa *ServerConfig) SetHTTPS(value string) {
 	sa.https = value
 }
 
@@ -91,7 +91,7 @@ func (sa *ServerConfig) ParseFlags() {
 		sa.SetDBAddress(envDBAddress)
 	}
 
-	if envHttps, in := os.LookupEnv("ENABLE_HTTPS"); in {
-		sa.SetHttps(envHttps)
+	if envHTTPS, in := os.LookupEnv("ENABLE_HTTPS"); in {
+		sa.SetHTTPS(envHTTPS)
 	}
 }
