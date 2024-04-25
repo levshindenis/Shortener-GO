@@ -3,13 +3,14 @@ package main
 
 import (
 	"fmt"
-	"github.com/levshindenis/sprint1/internal/app/router"
-	"golang.org/x/crypto/acme/autocert"
 	"net/http"
 	_ "net/http/pprof"
 
+	"golang.org/x/crypto/acme/autocert"
+
 	"github.com/levshindenis/sprint1/internal/app/config"
 	"github.com/levshindenis/sprint1/internal/app/handlers"
+	"github.com/levshindenis/sprint1/internal/app/router"
 )
 
 var (
@@ -26,10 +27,12 @@ func main() {
 
 	fmt.Printf("Build version: %s\nBuild date: %s\nBuild commit: %s\n", buildVersion, buildDate, buildCommit)
 
-	conf.ParseFlags()
+	if err := conf.ParseFlags(); err != nil {
+		panic(err)
+	}
 	server.Init(conf)
 
-	if conf.GetHTTPS() == "" {
+	if !conf.GetHTTPS() {
 		if err := http.ListenAndServe(conf.GetStartAddress(), router.MyRouter(&server)); err != nil {
 			panic(err)
 		}
@@ -39,7 +42,7 @@ func main() {
 			Prompt: autocert.AcceptTOS,
 		}
 		HTTPSServer := &http.Server{
-			Addr:      ":443",
+			Addr:      conf.GetStartAddress(),
 			Handler:   router.MyRouter(&server),
 			TLSConfig: manager.TLSConfig(),
 		}
