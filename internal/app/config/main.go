@@ -158,7 +158,7 @@ func (sa *ServerConfig) ReadConfigFile() error {
 		sa.SetDBAddress(jsonData.DatabaseDSN)
 	}
 
-	if sa.GetHTTPS() == false {
+	if !sa.GetHTTPS() {
 		sa.SetHTTPS(jsonData.EnableHTTPS)
 	}
 	return nil
