@@ -2,9 +2,14 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	_ "net/http/pprof"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"golang.org/x/crypto/acme/autocert"
 
@@ -31,9 +36,22 @@ func main() {
 		panic(err)
 	}
 	server.Init(conf)
+	srv := &http.Server{Addr: conf.GetStartAddress(), Handler: router.MyRouter(&server)}
+
+	exitProgram := make(chan struct{})
+	sigint := make(chan os.Signal, 1)
+	signal.Notify(sigint, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
+
+	go func() {
+		<-sigint
+		if err := srv.Shutdown(context.Background()); err != nil {
+			panic(err)
+		}
+		close(exitProgram)
+	}()
 
 	if !conf.GetHTTPS() {
-		if err := http.ListenAndServe(conf.GetStartAddress(), router.MyRouter(&server)); err != nil {
+		if err := srv.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 			panic(err)
 		}
 	} else {
@@ -41,15 +59,13 @@ func main() {
 			Cache:  autocert.DirCache("cache-dir"),
 			Prompt: autocert.AcceptTOS,
 		}
-		HTTPSServer := &http.Server{
-			Addr:      conf.GetStartAddress(),
-			Handler:   router.MyRouter(&server),
-			TLSConfig: manager.TLSConfig(),
-		}
-		if err := HTTPSServer.ListenAndServeTLS("", ""); err != nil {
+		srv.TLSConfig = manager.TLSConfig()
+		if err := srv.ListenAndServeTLS("", ""); !errors.Is(err, http.ErrServerClosed) {
 			panic(err)
 		}
 	}
+
+	<-exitProgram
 
 	server.Cancel()
 }
