@@ -86,6 +86,7 @@ func (serv *Server) Stats() (models.StatsData, error) {
 	return stat, nil
 }
 
+// InCIDR проверяет, есть ли переданный IP в доверенной подсети
 func (serv *Server) InCIDR(userIP string) bool {
 	flag := false
 	c, _ := cidr.Parse(serv.GetServerConfig().GetTrustedSubnet())
