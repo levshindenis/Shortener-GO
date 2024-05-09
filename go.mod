@@ -17,6 +17,7 @@ require (
 )
 
 require (
+	github.com/3th1nk/cidr v0.2.0 // indirect
 	github.com/BurntSushi/toml v1.2.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect

@@ -34,6 +34,7 @@ func MyRouter(hs *handlers.HStorage) *chi.Mux {
 			r.Post("/shorten/batch", middleware.WithCompression(ml.WithLogging(middleware.CheckCookie(hs.BatchURLs, hs))))
 			r.Get("/user/urls", middleware.WithCompression(ml.WithLogging(middleware.CheckCookie(hs.GetURLs, hs))))
 			r.Delete("/user/urls", ml.WithLogging(middleware.CheckCookie(hs.DelURLs, hs)))
+			r.Get("/internal/stats", ml.WithLogging(hs.Stats))
 		})
 	})
 	return r

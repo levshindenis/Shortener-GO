@@ -19,6 +19,7 @@ type ServerConfig struct {
 	dbAddress      string
 	https          bool
 	configFilePath string
+	trustedSubnet  string
 }
 
 // GetStartAddress - возвращает адрес запуска HTTP-сервера.
@@ -51,6 +52,11 @@ func (sa *ServerConfig) GetConfigFilePath() string {
 	return sa.configFilePath
 }
 
+// GetTrustedSubnet - возвращает разрешенные IP
+func (sa *ServerConfig) GetTrustedSubnet() string {
+	return sa.trustedSubnet
+}
+
 // SetStartAddress - устанавливает значение value для startAddress.
 func (sa *ServerConfig) SetStartAddress(value string) {
 	sa.startAddress = value
@@ -81,6 +87,11 @@ func (sa *ServerConfig) SetConfigFilePath(value string) {
 	sa.configFilePath = value
 }
 
+// SetTrustedSubnet - устанавливает значение value для разрешенных IP
+func (sa *ServerConfig) SetTrustedSubnet(value string) {
+	sa.trustedSubnet = value
+}
+
 // ParseFlags - берет значения из флагов или переменных окружения и устанавливает значения в структуру ServerConfig.
 func (sa *ServerConfig) ParseFlags() error {
 	flag.StringVar(&sa.startAddress, "a", "localhost:8080", "address and port to run shortener")
@@ -89,6 +100,7 @@ func (sa *ServerConfig) ParseFlags() error {
 	flag.StringVar(&sa.dbAddress, "d", "", "db address")
 	flag.BoolVar(&sa.https, "s", false, "tls")
 	flag.StringVar(&sa.configFilePath, "c", "", "config file path")
+	flag.StringVar(&sa.trustedSubnet, "t", "", "IPs")
 
 	flag.Parse()
 
@@ -116,6 +128,10 @@ func (sa *ServerConfig) ParseFlags() error {
 		sa.SetConfigFilePath(envConfigFile)
 	}
 
+	if envTrustedSubnet, in := os.LookupEnv("TRUSTED_SUBNET"); in {
+		sa.SetTrustedSubnet(envTrustedSubnet)
+	}
+
 	if sa.GetConfigFilePath() != "" {
 		if err := sa.ReadConfigFile(); err != nil {
 			return err
@@ -126,6 +142,8 @@ func (sa *ServerConfig) ParseFlags() error {
 
 // ReadConfigFile - устанавливает новые значения для переменных окружения из config файла
 func (sa *ServerConfig) ReadConfigFile() error {
+	var jsonData models.ConfigFileData
+
 	file, err := os.OpenFile(sa.GetConfigFilePath(), os.O_RDONLY, os.ModePerm)
 	if err != nil {
 		return err
@@ -137,7 +155,6 @@ func (sa *ServerConfig) ReadConfigFile() error {
 		return err
 	}
 
-	var jsonData models.ConfigFileData
 	if err = json.Unmarshal(fromFileData, &jsonData); err != nil {
 		return err
 	}
@@ -161,5 +178,10 @@ func (sa *ServerConfig) ReadConfigFile() error {
 	if !sa.GetHTTPS() {
 		sa.SetHTTPS(jsonData.EnableHTTPS)
 	}
+
+	if sa.GetTrustedSubnet() == "" {
+		sa.SetTrustedSubnet(jsonData.TrustedSubnet)
+	}
+
 	return nil
 }
