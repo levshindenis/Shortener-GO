@@ -5,6 +5,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	pb "github.com/levshindenis/sprint1/cmd/proto/shortener"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+	"log"
+	"net"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
@@ -41,6 +46,21 @@ func main() {
 	exitProgram := make(chan struct{})
 	sigint := make(chan os.Signal, 1)
 	signal.Notify(sigint, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
+
+	listen, err := net.Listen("tcp", ":3200")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	s := grpc.NewServer()
+	reflection.Register(s)
+	pb.RegisterShortenerServer(s, &ShortenerServer{serv: &server.Server})
+
+	go func() {
+		if err = s.Serve(listen); err != nil {
+			log.Fatalf("Failed to serve gRPC server: %v", err)
+		}
+	}()
 
 	go func() {
 		<-sigint

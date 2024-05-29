@@ -1,0 +1,145 @@
+syntax = "proto3";
+
+package cmd;
+
+option go_package = "cmd/proto";
+
+import "google/api/annotations.proto";
+
+message JLongURL {
+  string url = 1 [ json_name = "url" ];
+}
+
+message JShortURL {
+  string result = 1 [ json_name = "result" ];
+}
+
+message BLongURL {
+  string correlation_id = 1 [ json_name = "correlation_id" ];
+  string original_url = 2 [ json_name = "original_url" ];
+}
+
+message BShortURL {
+  string correlation_id = 1 [ json_name = "correlation_id"] ;
+  string short_url = 2 [ json_name = "short_url" ];
+}
+
+message InfoURL {
+  string short_url = 1 [ json_name = "short_url" ];
+  string original_url = 2 [ json_name = "original_url" ];
+}
+
+message State {
+  int32 urls = 1 [ json_name = "urls" ];
+  int32 users = 2 [ json_name = "users" ];
+}
+
+message AddURLRequest {
+  string longURL = 1;
+}
+
+message AddURLResponse {
+  string shortURL = 1;
+}
+
+message GetLongURLRequest {
+  string shortURL = 1;
+}
+
+message GetLongURLResponse {
+  string longURL = 1;
+}
+
+message AddJsURLRequest {
+  JLongURL longURL = 1;
+}
+
+message AddJsURLResponse {
+  JShortURL shortURL = 1;
+}
+
+message PingRequest {
+
+}
+
+message PingResponse {
+}
+
+message BatchURLsRequest {
+  repeated BLongURL longURLs = 1;
+}
+
+message BatchURLsResponse {
+  repeated BShortURL shortURLs = 1;
+}
+
+message GetAllURLsRequest {
+}
+
+message GetAllURLsResponse {
+  repeated InfoURL allURLs = 1;
+}
+
+message DeleteURLsRequest {
+  repeated string shortURLs = 1;
+}
+
+message DeleteURLsResponse {
+}
+
+message StatsRequest {
+
+}
+
+message StatsResponse {
+  State state = 1;
+}
+
+
+
+service Shortener {
+  rpc AddURL(AddURLRequest) returns (AddURLResponse) {
+    option (google.api.http) = {
+      post: "/"
+      body: "*"
+    };
+  }
+  rpc GetLongURL(GetLongURLRequest) returns (GetLongURLResponse) {
+    option (google.api.http) = {
+      get: "/{shortURL}"
+    };
+  }
+  rpc AddJsURL(AddJsURLRequest) returns (AddJsURLResponse) {
+    option (google.api.http) = {
+      post: "/api/shorten"
+      body: "*"
+    };
+  }
+  rpc Ping(PingRequest) returns (PingResponse) {
+    option (google.api.http) = {
+      get: "/ping"
+    };
+  }
+  rpc BatchURLs(BatchURLsRequest) returns (BatchURLsResponse) {
+    option (google.api.http) = {
+      post: "/api/shorten/batch"
+      body: "*"
+    };
+  }
+  rpc GetAllURLs(GetAllURLsRequest) returns (GetAllURLsResponse) {
+    option (google.api.http) = {
+      get: "/api/user/urls"
+    };
+  }
+  rpc DeleteURLs(DeleteURLsRequest) returns (DeleteURLsResponse) {
+    option (google.api.http) = {
+      delete: "/api/user/urls"
+      body: "*"
+    };
+  }
+  rpc Stats(StatsRequest) returns (StatsResponse) {
+    option (google.api.http) = {
+      get: "/api/internal/stats"
+    };
+  }
+}
