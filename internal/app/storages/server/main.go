@@ -6,8 +6,6 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/3th1nk/cidr"
-
 	"github.com/levshindenis/sprint1/internal/app/config"
 	"github.com/levshindenis/sprint1/internal/app/models"
 	"github.com/levshindenis/sprint1/internal/app/storages/cookie"
@@ -24,6 +22,7 @@ type IStorage interface {
 type Server struct {
 	sc     config.ServerConfig
 	cs     cookie.UserCookie
+	ips    []string
 	st     IStorage
 	db     *sql.DB
 	ch     chan models.DeleteValue
@@ -41,6 +40,21 @@ func (serv *Server) GetStorage() IStorage {
 	return serv.st
 }
 
+// GetServerConfig возвращает указатель на хранилище конфигураций системы.
+func (serv *Server) GetServerConfig() *config.ServerConfig {
+	return &serv.sc
+}
+
+// GetDB возвращает ссылку на БД-хранилище
+func (serv *Server) GetDB() *sql.DB {
+	return serv.db
+}
+
+// GetIps - возвращает список правильных ip
+func (serv *Server) GetIps() []string {
+	return serv.ips
+}
+
 // SetChan отправляет delValue в канал.
 func (serv *Server) SetChan(delValue models.DeleteValue) {
 	serv.ch <- delValue
@@ -52,16 +66,6 @@ func (serv *Server) Cancel() {
 		serv.db.Close()
 	}
 	serv.cancel()
-}
-
-// GetServerConfig возвращает указатель на хранилище конфигураций системы.
-func (serv *Server) GetServerConfig() *config.ServerConfig {
-	return &serv.sc
-}
-
-// GetDB возвращает ссылку на БД-хранилище
-func (serv *Server) GetDB() *sql.DB {
-	return serv.db
 }
 
 // Stats возвращает количество пользователей и количество сокращенных URL
@@ -84,20 +88,4 @@ func (serv *Server) Stats() (models.StatsData, error) {
 	}
 
 	return stat, nil
-}
-
-// InCIDR проверяет, есть ли переданный IP в доверенной подсети
-func (serv *Server) InCIDR(userIP string) bool {
-	flag := false
-	c, _ := cidr.Parse(serv.GetServerConfig().GetTrustedSubnet())
-
-	c.Each(func(ip string) bool {
-		if userIP == ip {
-			flag = true
-			return false
-		}
-		return true
-	})
-
-	return flag
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"slices"
 	"strings"
 	"time"
 
@@ -232,7 +233,7 @@ func (s *ShortenerServer) Stats(ctx context.Context, in *pb.StatsRequest) (*pb.S
 		}
 	}
 
-	if ip == "" || !s.serv.InCIDR(ip) {
+	if ip == "" || !slices.Contains(s.serv.GetIps(), ip) {
 		return nil, status.Error(codes.Canceled, "Bad IP")
 	}
 

@@ -67,6 +67,7 @@ func main() {
 		if err := srv.Shutdown(context.Background()); err != nil {
 			panic(err)
 		}
+		s.GracefulStop()
 		close(exitProgram)
 	}()
 

@@ -3,11 +3,12 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"slices"
 )
 
 // Stats - handler для получения статистики по пользователям и сокращенным URL
 func (serv *HStorage) Stats(w http.ResponseWriter, r *http.Request) {
-	if r.Header.Get("X-Real-IP") == "" || !serv.InCIDR(r.Header.Get("X-Real-IP")) {
+	if r.Header.Get("X-Real-IP") == "" || !slices.Contains(serv.GetIps(), r.Header.Get("X-Real-IP")) {
 		http.Error(w, "Bad IP", http.StatusForbidden)
 		return
 	}
