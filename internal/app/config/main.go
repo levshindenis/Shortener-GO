@@ -21,7 +21,7 @@ type ServerConfig struct {
 	configFilePath string
 	trustedSubnet  string
 	startAddressG  string
-	gTls           bool
+	gTLS           bool
 }
 
 // GetStartAddress - возвращает адрес запуска HTTP-сервера.
@@ -66,7 +66,7 @@ func (sa *ServerConfig) GetStartAddressG() string {
 
 // GetGTLS - Возвращает TLS gRPC
 func (sa *ServerConfig) GetGTLS() bool {
-	return sa.gTls
+	return sa.gTLS
 }
 
 // SetStartAddress - устанавливает значение value для startAddress.
@@ -111,7 +111,7 @@ func (sa *ServerConfig) SetStartAddressG(value string) {
 
 // SetGTLS - устанавливает значение value для gTLS.
 func (sa *ServerConfig) SetGTLS(value bool) {
-	sa.gTls = value
+	sa.gTLS = value
 }
 
 // ParseFlags - берет значения из флагов или переменных окружения и устанавливает значения в структуру ServerConfig.
@@ -124,7 +124,7 @@ func (sa *ServerConfig) ParseFlags() error {
 	flag.StringVar(&sa.configFilePath, "c", "", "config file path")
 	flag.StringVar(&sa.trustedSubnet, "t", "", "IPs")
 	flag.StringVar(&sa.startAddressG, "ga", ":3200", "address and port to run gRPC shortener")
-	flag.BoolVar(&sa.gTls, "gs", false, "tls gRPC")
+	flag.BoolVar(&sa.gTLS, "gs", false, "tls gRPC")
 
 	flag.Parse()
 
@@ -161,7 +161,7 @@ func (sa *ServerConfig) ParseFlags() error {
 	}
 
 	if envGTLS := os.Getenv("ENABLE_TLS_GRPC"); envGTLS != "" {
-		sa.gTls, _ = strconv.ParseBool(envGTLS)
+		sa.gTLS, _ = strconv.ParseBool(envGTLS)
 	}
 
 	if sa.GetConfigFilePath() != "" {
