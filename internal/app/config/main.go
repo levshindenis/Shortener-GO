@@ -20,6 +20,8 @@ type ServerConfig struct {
 	https          bool
 	configFilePath string
 	trustedSubnet  string
+	startAddressG  string
+	gTls           bool
 }
 
 // GetStartAddress - возвращает адрес запуска HTTP-сервера.
@@ -57,6 +59,16 @@ func (sa *ServerConfig) GetTrustedSubnet() string {
 	return sa.trustedSubnet
 }
 
+// GetStartAddressG - возвращает адрес запуска gRPC-сервера.
+func (sa *ServerConfig) GetStartAddressG() string {
+	return sa.startAddressG
+}
+
+// GetGTLS - Возвращает TLS gRPC
+func (sa *ServerConfig) GetGTLS() bool {
+	return sa.gTls
+}
+
 // SetStartAddress - устанавливает значение value для startAddress.
 func (sa *ServerConfig) SetStartAddress(value string) {
 	sa.startAddress = value
@@ -92,6 +104,16 @@ func (sa *ServerConfig) SetTrustedSubnet(value string) {
 	sa.trustedSubnet = value
 }
 
+// SetStartAddressG - устанавливает значение value для startAddressG.
+func (sa *ServerConfig) SetStartAddressG(value string) {
+	sa.startAddressG = value
+}
+
+// SetGTLS - устанавливает значение value для gTLS.
+func (sa *ServerConfig) SetGTLS(value bool) {
+	sa.gTls = value
+}
+
 // ParseFlags - берет значения из флагов или переменных окружения и устанавливает значения в структуру ServerConfig.
 func (sa *ServerConfig) ParseFlags() error {
 	flag.StringVar(&sa.startAddress, "a", "localhost:8080", "address and port to run shortener")
@@ -101,6 +123,8 @@ func (sa *ServerConfig) ParseFlags() error {
 	flag.BoolVar(&sa.https, "s", false, "tls")
 	flag.StringVar(&sa.configFilePath, "c", "", "config file path")
 	flag.StringVar(&sa.trustedSubnet, "t", "", "IPs")
+	flag.StringVar(&sa.startAddressG, "ga", ":3200", "address and port to run gRPC shortener")
+	flag.BoolVar(&sa.gTls, "gs", false, "tls gRPC")
 
 	flag.Parse()
 
@@ -130,6 +154,14 @@ func (sa *ServerConfig) ParseFlags() error {
 
 	if envTrustedSubnet, in := os.LookupEnv("TRUSTED_SUBNET"); in {
 		sa.SetTrustedSubnet(envTrustedSubnet)
+	}
+
+	if envStartAddressG, in := os.LookupEnv("SERVER_ADDRESS_GRPC"); in {
+		sa.SetStartAddressG(envStartAddressG)
+	}
+
+	if envGTLS := os.Getenv("ENABLE_TLS_GRPC"); envGTLS != "" {
+		sa.gTls, _ = strconv.ParseBool(envGTLS)
 	}
 
 	if sa.GetConfigFilePath() != "" {
@@ -181,6 +213,14 @@ func (sa *ServerConfig) ReadConfigFile() error {
 
 	if sa.GetTrustedSubnet() == "" {
 		sa.SetTrustedSubnet(jsonData.TrustedSubnet)
+	}
+
+	if sa.GetStartAddressG() == "" {
+		sa.SetStartAddressG(jsonData.ServerAddressG)
+	}
+
+	if !sa.GetGTLS() {
+		sa.SetGTLS(jsonData.GTls)
 	}
 
 	return nil

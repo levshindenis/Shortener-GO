@@ -6,6 +6,7 @@ import (
 	"crypto/cipher"
 	rb "crypto/rand"
 	"encoding/base64"
+	"google.golang.org/grpc/credentials"
 	rs "math/rand"
 	"strconv"
 	"time"
@@ -60,4 +61,12 @@ func GenerateCookie(value int) (string, error) {
 
 	return base64.StdEncoding.EncodeToString(
 		aesgcm.Seal(nil, nonce, []byte(strconv.Itoa(value)), nil)), nil
+}
+
+// GenerateTLSCreds - исползуется для TLS сервера
+func GenerateTLSCreds() (credentials.TransportCredentials, error) {
+	certFile := "../../internal/app/certificates/server.crt"
+	keyFile := "../../internal/app/certificates/server.key"
+
+	return credentials.NewServerTLSFromFile(certFile, keyFile)
 }
