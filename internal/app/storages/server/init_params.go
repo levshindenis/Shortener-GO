@@ -10,12 +10,14 @@ import (
 	"github.com/levshindenis/sprint1/internal/app/storages/db"
 	"github.com/levshindenis/sprint1/internal/app/storages/file"
 	"github.com/levshindenis/sprint1/internal/app/storages/memory"
+	"github.com/levshindenis/sprint1/internal/app/tools"
 )
 
 // Init используется для инициализации переменных хранилища.
 func (serv *Server) Init(conf config.ServerConfig) {
 	serv.sc = conf
 	serv.cs = cookie.UserCookie{Arr: make([]string, 0)}
+	serv.ips = tools.MakeIps(conf.GetTrustedSubnet())
 	serv.ctx, serv.cancel = context.WithCancel(context.Background())
 	serv.InitStorage()
 	serv.ch = make(chan models.DeleteValue, 1024)

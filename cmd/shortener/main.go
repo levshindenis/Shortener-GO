@@ -5,17 +5,23 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"golang.org/x/crypto/acme/autocert"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+	"log"
+	"net"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"golang.org/x/crypto/acme/autocert"
+	pb "github.com/levshindenis/sprint1/cmd/proto/shortener"
 
 	"github.com/levshindenis/sprint1/internal/app/config"
 	"github.com/levshindenis/sprint1/internal/app/handlers"
 	"github.com/levshindenis/sprint1/internal/app/router"
+	"github.com/levshindenis/sprint1/internal/app/tools"
 )
 
 var (
@@ -28,6 +34,7 @@ func main() {
 	var (
 		server handlers.HStorage
 		conf   config.ServerConfig
+		gs     *grpc.Server
 	)
 
 	fmt.Printf("Build version: %s\nBuild date: %s\nBuild commit: %s\n", buildVersion, buildDate, buildCommit)
@@ -42,11 +49,36 @@ func main() {
 	sigint := make(chan os.Signal, 1)
 	signal.Notify(sigint, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
 
+	listen, err := net.Listen("tcp", conf.GetStartAddressG())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if !conf.GetGTLS() {
+		gs = grpc.NewServer()
+	} else {
+		tlsCreds, err := tools.GenerateTLSCreds()
+		if err != nil {
+			panic(err)
+		}
+		gs = grpc.NewServer(grpc.Creds(tlsCreds))
+	}
+
+	reflection.Register(gs)
+	pb.RegisterShortenerServer(gs, &ShortenerServer{serv: &server.Server})
+
+	go func() {
+		if err = gs.Serve(listen); err != nil {
+			log.Fatalf("Failed to serve gRPC server: %v", err)
+		}
+	}()
+
 	go func() {
 		<-sigint
 		if err := srv.Shutdown(context.Background()); err != nil {
 			panic(err)
 		}
+		gs.GracefulStop()
 		close(exitProgram)
 	}()
 
@@ -60,7 +92,7 @@ func main() {
 			Prompt: autocert.AcceptTOS,
 		}
 		srv.TLSConfig = manager.TLSConfig()
-		if err := srv.ListenAndServeTLS("", ""); !errors.Is(err, http.ErrServerClosed) {
+		if err = srv.ListenAndServeTLS("", ""); !errors.Is(err, http.ErrServerClosed) {
 			panic(err)
 		}
 	}

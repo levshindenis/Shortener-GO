@@ -69,4 +69,13 @@ type ConfigFileData struct {
 	FileStoragePath string `json:"file_storage_path"`
 	DatabaseDSN     string `json:"database_dsn"`
 	EnableHTTPS     bool   `json:"enable_https"`
+	TrustedSubnet   string `json:"trusted_subnet"`
+	ServerAddressG  string `json:"server_address_grpc"`
+	GTls            bool   `json:"enable_tls_grpc"`
+}
+
+// StatsData - структура для handler.stats. Хранится: сколько было сокращено URL и сколько пользователей
+type StatsData struct {
+	URLs  int `json:"urls"`
+	Users int `json:"users"`
 }

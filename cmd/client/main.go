@@ -29,6 +29,7 @@ func NewServer() *Server {
 		"5": "bPost",
 		"6": "getAll",
 		"7": "del",
+		"8": "stat",
 	}
 	return &Server{
 		client:  client,
@@ -52,19 +53,21 @@ func main() {
 			{Name: "bPost", Src: []string{"main"}, Dst: "bPostH"},
 			{Name: "getAll", Src: []string{"main"}, Dst: "getAllH"},
 			{Name: "del", Src: []string{"main"}, Dst: "delH"},
+			{Name: "stat", Src: []string{"main"}, Dst: "statH"},
 			{Name: "mainpage",
-				Src: []string{"postH", "getH", "pingH", "jPostH", "bPostH", "getAllH", "delH"},
+				Src: []string{"postH", "getH", "pingH", "jPostH", "bPostH", "getAllH", "delH", "statH"},
 				Dst: "main"},
 		},
 		fsm.Callbacks{
-			"main":    func(_ context.Context, _ *fsm.Event) { server.SelectAction() },
-			"post":    func(_ context.Context, _ *fsm.Event) { server.PostH() },
-			"get":     func(_ context.Context, _ *fsm.Event) { server.GetH() },
-			"ping":    func(_ context.Context, _ *fsm.Event) { server.PingH() },
-			"jPost":   func(_ context.Context, _ *fsm.Event) { server.JPostH() },
-			"bPostH":  func(_ context.Context, _ *fsm.Event) { server.BPostH() },
-			"getAllH": func(_ context.Context, _ *fsm.Event) { server.GetAllH() },
-			"delH":    func(_ context.Context, _ *fsm.Event) { server.DelH() },
+			"main":   func(_ context.Context, _ *fsm.Event) { server.SelectAction() },
+			"post":   func(_ context.Context, _ *fsm.Event) { server.PostH() },
+			"get":    func(_ context.Context, _ *fsm.Event) { server.GetH() },
+			"ping":   func(_ context.Context, _ *fsm.Event) { server.PingH() },
+			"jPost":  func(_ context.Context, _ *fsm.Event) { server.JPostH() },
+			"bPost":  func(_ context.Context, _ *fsm.Event) { server.BPostH() },
+			"getAll": func(_ context.Context, _ *fsm.Event) { server.GetAllH() },
+			"del":    func(_ context.Context, _ *fsm.Event) { server.DelH() },
+			"stat":   func(_ context.Context, _ *fsm.Event) { server.StatsH() },
 		},
 	)
 

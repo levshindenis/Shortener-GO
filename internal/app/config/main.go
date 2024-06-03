@@ -19,6 +19,9 @@ type ServerConfig struct {
 	dbAddress      string
 	https          bool
 	configFilePath string
+	trustedSubnet  string
+	startAddressG  string
+	gTLS           bool
 }
 
 // GetStartAddress - возвращает адрес запуска HTTP-сервера.
@@ -51,6 +54,21 @@ func (sa *ServerConfig) GetConfigFilePath() string {
 	return sa.configFilePath
 }
 
+// GetTrustedSubnet - возвращает разрешенные IP
+func (sa *ServerConfig) GetTrustedSubnet() string {
+	return sa.trustedSubnet
+}
+
+// GetStartAddressG - возвращает адрес запуска gRPC-сервера.
+func (sa *ServerConfig) GetStartAddressG() string {
+	return sa.startAddressG
+}
+
+// GetGTLS - Возвращает TLS gRPC
+func (sa *ServerConfig) GetGTLS() bool {
+	return sa.gTLS
+}
+
 // SetStartAddress - устанавливает значение value для startAddress.
 func (sa *ServerConfig) SetStartAddress(value string) {
 	sa.startAddress = value
@@ -81,6 +99,21 @@ func (sa *ServerConfig) SetConfigFilePath(value string) {
 	sa.configFilePath = value
 }
 
+// SetTrustedSubnet - устанавливает значение value для разрешенных IP
+func (sa *ServerConfig) SetTrustedSubnet(value string) {
+	sa.trustedSubnet = value
+}
+
+// SetStartAddressG - устанавливает значение value для startAddressG.
+func (sa *ServerConfig) SetStartAddressG(value string) {
+	sa.startAddressG = value
+}
+
+// SetGTLS - устанавливает значение value для gTLS.
+func (sa *ServerConfig) SetGTLS(value bool) {
+	sa.gTLS = value
+}
+
 // ParseFlags - берет значения из флагов или переменных окружения и устанавливает значения в структуру ServerConfig.
 func (sa *ServerConfig) ParseFlags() error {
 	flag.StringVar(&sa.startAddress, "a", "localhost:8080", "address and port to run shortener")
@@ -89,6 +122,9 @@ func (sa *ServerConfig) ParseFlags() error {
 	flag.StringVar(&sa.dbAddress, "d", "", "db address")
 	flag.BoolVar(&sa.https, "s", false, "tls")
 	flag.StringVar(&sa.configFilePath, "c", "", "config file path")
+	flag.StringVar(&sa.trustedSubnet, "t", "", "IPs")
+	flag.StringVar(&sa.startAddressG, "ga", ":3200", "address and port to run gRPC shortener")
+	flag.BoolVar(&sa.gTLS, "gs", false, "tls gRPC")
 
 	flag.Parse()
 
@@ -116,6 +152,18 @@ func (sa *ServerConfig) ParseFlags() error {
 		sa.SetConfigFilePath(envConfigFile)
 	}
 
+	if envTrustedSubnet, in := os.LookupEnv("TRUSTED_SUBNET"); in {
+		sa.SetTrustedSubnet(envTrustedSubnet)
+	}
+
+	if envStartAddressG, in := os.LookupEnv("SERVER_ADDRESS_GRPC"); in {
+		sa.SetStartAddressG(envStartAddressG)
+	}
+
+	if envGTLS := os.Getenv("ENABLE_TLS_GRPC"); envGTLS != "" {
+		sa.gTLS, _ = strconv.ParseBool(envGTLS)
+	}
+
 	if sa.GetConfigFilePath() != "" {
 		if err := sa.ReadConfigFile(); err != nil {
 			return err
@@ -126,6 +174,8 @@ func (sa *ServerConfig) ParseFlags() error {
 
 // ReadConfigFile - устанавливает новые значения для переменных окружения из config файла
 func (sa *ServerConfig) ReadConfigFile() error {
+	var jsonData models.ConfigFileData
+
 	file, err := os.OpenFile(sa.GetConfigFilePath(), os.O_RDONLY, os.ModePerm)
 	if err != nil {
 		return err
@@ -137,7 +187,6 @@ func (sa *ServerConfig) ReadConfigFile() error {
 		return err
 	}
 
-	var jsonData models.ConfigFileData
 	if err = json.Unmarshal(fromFileData, &jsonData); err != nil {
 		return err
 	}
@@ -161,5 +210,18 @@ func (sa *ServerConfig) ReadConfigFile() error {
 	if !sa.GetHTTPS() {
 		sa.SetHTTPS(jsonData.EnableHTTPS)
 	}
+
+	if sa.GetTrustedSubnet() == "" {
+		sa.SetTrustedSubnet(jsonData.TrustedSubnet)
+	}
+
+	if sa.GetStartAddressG() == "" {
+		sa.SetStartAddressG(jsonData.ServerAddressG)
+	}
+
+	if !sa.GetGTLS() {
+		sa.SetGTLS(jsonData.GTls)
+	}
+
 	return nil
 }
